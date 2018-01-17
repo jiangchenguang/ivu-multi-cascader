@@ -1,0 +1,20 @@
+{
+  "presets": [
+    [
+      "env",
+      {
+        "targets": {
+          "browsers": [
+            "last 2 versions",
+            "ie >= 9"
+          ]
+        }
+      }
+    ]
+  ],
+  "plugins": [
+    "transform-runtime",
+    "transform-object-rest-spread",
+    "syntax-async-functions"
+  ]
+}
