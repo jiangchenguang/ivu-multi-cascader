@@ -1,52 +1,20 @@
 <template>
   <div>
-    <Select multiple filterable v-model="selectModel" style="width:200px">
-      <SelOption v-for="item in selectOption" :value="item.value" :key="item.value">{{ item.label }}</SelOption>
-    </Select>
-
-    <Cascader trigger="hover"
+    <Cascader :data="cascadeOption"
+              :value="cascaderModel"
               filterable
-              :data="cascadeOption"
-              v-model="cascaderModel"
+              multiple
+              @input="onChange"
     ></Cascader>
   </div>
 </template>
 
 <script>
-  import { Select, SelOption } from "./views/components/select";
   import Cascader from './views/components/cascader';
 
   export default {
     data() {
       return {
-        selectOption: [
-          {
-            value: 'New York',
-            label: 'New York'
-          },
-          {
-            value: 'London',
-            label: 'London'
-          },
-          {
-            value: 'Sydney',
-            label: 'Sydney'
-          },
-          {
-            value: 'Ottawa',
-            label: 'Ottawa'
-          },
-          {
-            value: 'Paris',
-            label: 'Paris'
-          },
-          {
-            value: 'Canberra',
-            label: 'Canberra'
-          }
-        ],
-        selectModel: [],
-
         cascadeOption: [{
           value: 'beijing',
           label: '北京',
@@ -99,9 +67,12 @@
     },
     mounted() {
     },
+    methods: {
+      onChange(val) {
+        console.log('test change:', val);
+      }
+    },
     components: {
-      Select,
-      SelOption,
       Cascader,
     }
   }
