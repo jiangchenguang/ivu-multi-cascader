@@ -10,7 +10,7 @@
                 @click.native.stop="handleClickItem(item)"
                 @mouseenter.native.stop="handleHoverItem(item)"></Casitem>
         </ul><Caspanel v-if="sublist && sublist.length" :prefix-cls="prefixCls" :data="sublist" :disabled="disabled"
-                       :trigger="trigger" :change-on-select="changeOnSelect"></Caspanel>
+                       :trigger="trigger"></Caspanel>
     </span>
 </template>
 <script>
@@ -32,7 +32,6 @@
         }
       },
       disabled: Boolean,
-      changeOnSelect: Boolean,
       trigger: String,
       prefixCls: String
     },

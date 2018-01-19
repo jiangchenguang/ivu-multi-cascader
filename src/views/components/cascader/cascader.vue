@@ -12,31 +12,30 @@
             v-model="query"
             :readonly="!filterable"
             :disabled="disabled"
-            :class="[prefixSelCls + '-input']"
+            :class="[selectPrefixCls + '-input']"
             :style="inputStyle"
-            :placeholder="filterable && !multiSelected.length ? placeholder : ''"
+            :placeholder="filterable && !selected.length ? placeholder : ''"
             autocomplete="off"
             spellcheck="false"
             @keydown="resetInputState"
         >
       </div>
-      <div v-else>
+      <template v-else>
         <i-input
             ref="input"
-            :element-id="elementId"
             :readonly="!filterable"
             :disabled="disabled"
-            :value="displayInputRender"
+            :value="this.filterable ? '' : this.singleDisplayRender"
             @on-change="handleInput"
             :size="size"
-            :placeholder="filterable && !singleSelected.length ? placeholder : ''"
+            :placeholder="filterable && !selected.length ? placeholder : ''"
         ></i-input>
         <div
             :class="[prefixCls + '-label']"
             v-show="filterable && query === ''"
             @click="handleFocus">{{ singleDisplayRender }}
         </div>
-      </div>
+      </template>
 
       <Icon type="ios-close"
             :class="[prefixCls + '-arrow']"
@@ -60,14 +59,14 @@
               :prefix-cls="prefixCls"
               :data="casPanelOpts"
               :disabled="disabled"
-              :change-on-select="changeOnSelect"
           ></Caspanel>
           <div :class="[prefixCls + '-dropdown']" v-show="filterable && query !== '' && querySelections.length">
             <ul :class="[selectPrefixCls + '-dropdown-list']">
               <li
-                  :class="[selectPrefixCls + '-item', {
-                                    [selectPrefixCls + '-item-disabled']: item.disabled
-                                }]"
+                  :class="[
+                    selectPrefixCls + '-item',
+                    {[selectPrefixCls + '-item-disabled']: item.disabled}
+                  ]"
                   v-for="(item, index) in querySelections"
                   @click="handleSelectItem(index)" v-html="item.display"
               ></li>
@@ -92,7 +91,6 @@
 
   const prefixCls = 'ivu-cascader';
   const selectPrefixCls = 'ivu-select';
-  const prefixSelCls = 'ivu-select';
 
   export default {
     name: 'Cascader',
@@ -125,10 +123,6 @@
           return oneOf(value, [ 'small', 'large' ]);
         }
       },
-      changeOnSelect: {
-        type: Boolean,
-        default: false
-      },
       renderFormat: {
         type: Function,
         default(label) {
@@ -151,12 +145,6 @@
         type: Boolean,
         default: false
       },
-      name: {
-        type: String
-      },
-      elementId: {
-        type: String
-      },
       multiple: {
         type: Boolean,
         default: false
@@ -166,14 +154,16 @@
       return {
         prefixCls: prefixCls,
         selectPrefixCls: selectPrefixCls,
-        prefixSelCls: prefixSelCls,
         visible: false,
-        // 【单选】选中项 字符串数组
-        singleSelected: this.value,
-        // 【多选】选中项 数组的数组
-        multiSelected: [],
+        /**
+         * 选中项
+         * 【单选】路径上item的集合
+         * 【多选】每个元素都是对应单选的一个结果
+         */
+        selected: this.value,
         query: '',
-        validDataStr: '',
+        // data的stringify
+        stringifyData: '',
         inputLength: 20
       };
     },
@@ -187,44 +177,57 @@
             [ `${prefixCls}-visible` ]: this.visible,
             [ `${prefixCls}-disabled` ]: this.disabled,
             [ `${prefixCls}-not-found` ]: this.filterable && this.query !== '' && !this.querySelections.length,
-            [ `${prefixSelCls}-multiple` ]: this.multiple,
+            [ `${selectPrefixCls}-multiple` ]: this.multiple,
           }
         ];
       },
       selectionCls() {
         return {
-          [ `${prefixSelCls}-selection` ]: this.multiple,
+          [ `${selectPrefixCls}-selection` ]: this.multiple,
         }
       },
-      // 什么时候显示清空按钮
+      // 显示清空按钮
       showCloseIcon() {
-        return this.singleSelected && this.singleSelected.length && this.clearable && !this.disabled;
+        return this.clearable
+          && !this.disabled
+          && this.selected
+          && this.selected.length
       },
       // 【单选】选中项可视化
       singleDisplayRender() {
-        let label = [];
-        this.singleSelected.forEach(item => {
-          label.push(item.label);
-        });
+        if (this.multiple) return '';
 
-        return this.renderFormat(label, this.singleSelected);
+        return this.renderFormat(this.selected.map(i => i.label));
       },
       // 【多选】选中项可视化
       multiDisplayRender() {
-        let r = [];
-        this.multiSelected.forEach(item => {
-          let label = [];
-          for (let path of item) {
-            label.push(path.label);
-          }
-          r.push(this.renderFormat(label));
-        });
+        if (!this.multiple) return [];
 
-        return r;
+        return this.selected.map(item => {
+          let labels = [];
+          for (let path of item) {
+            labels.push(path.label);
+          }
+          return this.renderFormat(labels);
+        })
       },
-      // 输入框显示
-      displayInputRender() {
-        return this.filterable ? '' : this.singleDisplayRender;
+      /**
+       * 动态选项
+       * 【单选】直接使用data
+       * 【多选】排除已选
+       */
+      casPanelOpts() {
+        if (!this.multiple) return this.data;
+
+        let duplicate = deepCopy(this.data);
+        this.selected.forEach(item => {
+          let len = item.length;
+          if (len > 0 && item[ len - 1 ].value) {
+            duplicate = treeRemoveItem(duplicate, item[ len - 1 ].value, 'value');
+          }
+        })
+
+        return duplicate;
       },
       // 过滤后的选项
       querySelections() {
@@ -267,31 +270,11 @@
         });
         return selections;
       },
-
-      /**
-       * 提供给表单的选项
-       * 【单选】单选时直接使用data
-       * 【多选】复选时会去除选中的选项
-       */
-      casPanelOpts() {
-        if (!this.multiple) return this.data;
-
-        let duplicate = deepCopy(this.data);
-        this.multiSelected.forEach(item => {
-          let len = item.length;
-          if (len > 0 && item[ len - 1 ].value) {
-            duplicate = treeRemoveItem(duplicate, item[ len - 1 ].value, 'value');
-          }
-        })
-
-        return duplicate;
-      },
-
       inputStyle() {
         let style = {};
 
         if (this.multiple) {
-          if (this.multiSelected.length === 0) {
+          if (this.selected.length === 0) {
             style.width = '100%';
           } else {
             style.width = `${this.inputLength}px`;
@@ -300,23 +283,8 @@
 
         return style;
       },
-
     },
     methods: {
-      /**
-       * 单选清空
-       * @returns {boolean}
-       */
-      clearSelect() {
-        if (this.disabled) return false;
-
-        const oldVal = JSON.stringify(this.singleSelected);
-        this.singleSelected.splice(0, this.singleSelected.length);
-        this.handleClose();
-        this.emitValue(this.singleSelected, oldVal);
-
-        // this.broadcast('Caspanel', 'on-clear');  // todo: 选中项高亮
-      },
       handleClose() {
         this.visible = false;
       },
@@ -331,33 +299,30 @@
       },
       onFocus() {
         this.visible = true;
-        if (!this.singleSelected.length) {
-
+        if (!this.selected.length) {
           // this.broadcast('Caspanel', 'on-clear');  // todo: 选中项高亮
         }
       },
-
       /**
        * 通知panel高亮选中项
        * @param init
        */
       updateSelected(init = false) {
         // todo: 选中项高亮
-        // if (!this.changeOnSelect || init) {
+        // if (init) {
         //   this.broadcast('Caspanel', 'on-find-selected', {
-        //     value: this.singleSelected
+        //     value: this.selected
         //   });
         // }
       },
       /**
        * emit消息
-       * @param val
-       * @param oldVal
+       * @param stringifyOldSelected
        */
-      emitValue(val, oldVal) {
-        if (JSON.stringify(val) === oldVal) return;
+      emitValue(stringifyOldSelected) {
+        if (JSON.stringify(this.selected) === stringifyOldSelected) return;
 
-        this.$emit('on-change', this.multiple ? this.multiSelected : this.singleSelected);
+        this.$emit('on-change', this.selected);
       },
       handleInput(event) {
         this.query = event.target.value;
@@ -365,59 +330,39 @@
       // 选中一个过滤项
       handleSelectItem(index) {
         const item = this.querySelections[ index ];
-        console.log('select one item:', item);
         if (item.item.disabled) return false;
 
         // 清空输入
         this.query = '';
         this.$refs.input.currentValue = '';
 
-        const oldVal = JSON.stringify(this.multiple ? this.multiSelected : this.singleSelected);
-
-        this.multiple ? this.setMultiSelected(item.item) : this.setSingleSelected(item.item);
-
-        // todo: 复选的通知外面
-        this.emitValue(this.singleSelected, oldVal);
+        this.setSelected(item.item);
 
         this.handleClose();
       },
       handleFocus() {
         this.$refs.input.focus();
       },
-      // 排除 loading 后的 data，避免重复触发 updateSelect
-      getValidData(data) {
-        function deleteData(item) {
-          const new_item = Object.assign({}, item);
-          if ('loading' in new_item) {
-            delete new_item.loading;
-          }
-          if ('__value' in new_item) {
-            delete new_item.__value;
-          }
-          if ('__label' in new_item) {
-            delete new_item.__label;
-          }
-          if ('children' in new_item && new_item.children.length) {
-            new_item.children = new_item.children.map(i => deleteData(i));
-          }
-          return new_item;
-        }
+      /**
+       * 清空选择
+       */
+      clearSelect() {
+        if (this.disabled) return;
 
-        return data.map(item => deleteData(item));
+        this.removeSelected({all: true});
+
+        this.handleClose();
+        // this.broadcast('Caspanel', 'on-clear');  // todo: 选中项高亮
       },
-
-      //-------------------------
       /**
        * 移除一个多选
        * @param index
        * @returns {boolean}
        */
       removeTag(index) {
-        if (this.disabled) {
-          return false;
-        }
+        if (this.disabled) return false;
 
-        this.multiSelected.splice(index, 1);
+        this.removeSelected({index});
 
         if (this.filterable && this.visible) {
           this.$refs.input.focus();
@@ -426,11 +371,38 @@
         this.broadcast('Drop', 'on-update-popper');
       },
       /**
+       * 添加一个选中项
+       * @param item
+       */
+      setSelected(item) {
+        const oldVal = JSON.stringify(this.selected);
+
+        this.multiple ? this.setMultiSelected(item) : this.setSingleSelected(item);
+
+        this.emitValue(oldVal);
+      },
+      /**
+       * 移除一个或全部选中项
+       * @param index
+       * @param all
+       */
+      removeSelected({index = -1, all = false}) {
+        const oldSelected = JSON.stringify(this.selected);
+
+        if (this.multiple && index !== -1) {
+          this.selected.splice(index, 1);
+        } else if (all) {
+          this.selected.splice(0, this.selected.length);
+        }
+
+        this.emitValue(oldSelected);
+      },
+      /**
        * 【单选】设置选中项
        * @param item
        */
       setSingleSelected(item) {
-        this.singleSelected = treeRes2cascaderRes(this.casPanelOpts, item.value, 'value');
+        this.selected.splice(0, this.selected.length, ...treeRes2cascaderRes(this.casPanelOpts, item.value, 'value'));
       },
       /**
        * 【多选】设置选中项
@@ -448,20 +420,18 @@
         }
         {
           // 添加path
-          this.multiSelected.push(treePath);
+          this.selected.push(treePath);
         }
       },
-
       resetInputState() {
         this.inputLength = this.$refs.input.value.length * 12 + 20;
       },
     },
     created() {
-      this.validDataStr = JSON.stringify(this.getValidData(this.data));
+      this.stringifyData = JSON.stringify(this.data);
       this.$on('on-selected', item => {
-        console.log('on-selected:', item, this.multiple);
 
-        this.multiple ? this.setMultiSelected(item) : this.setSingleSelected(item);
+        this.setSelected(item);
 
         if (this.filterable) {
           this.$refs.input.focus();
@@ -478,7 +448,7 @@
           if (this.multiple) {
             this.$refs.input.focus();
           } else {
-            if (this.singleSelected.length) {
+            if (this.selected.length) {
               this.updateSelected();
             }
             if (this.transfer) {
@@ -496,21 +466,20 @@
         }
       },
       value(val) {
-        this.singleSelected = val;
-        if (!val.length) this.singleSelected = [];
+        this.selected = val;
+        if (!val.length) this.selected = [];
       },
-      singleSelected() {
-        this.$emit('input', this.singleSelected);
+      selected() {
+        this.$emit('input', this.selected);
 
         this.updateSelected(true); // todo: 如果是prop修改，则通知子组件（两种情况：prop和用户选择）
       },
       data: {
         deep: true,
         handler() {
-          const validDataStr = JSON.stringify(this.getValidData(this.data));
-          // 如果不同说明选项更改
-          if (validDataStr !== this.validDataStr) {
-            this.validDataStr = validDataStr;
+          const stringifyData = JSON.stringify(this.data);
+          if (stringifyData !== this.stringifyData) {
+            this.stringifyData = stringifyData;
             this.$nextTick(() => this.updateSelected());
           }
         }
