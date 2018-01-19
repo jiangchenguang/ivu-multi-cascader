@@ -349,7 +349,7 @@
       clearSelect() {
         if (this.disabled) return;
 
-        this.removeSelected({all: true});
+        this.removeSelected({ all: true });
 
         this.handleClose();
         // this.broadcast('Caspanel', 'on-clear');  // todo: 选中项高亮
@@ -362,7 +362,7 @@
       removeTag(index) {
         if (this.disabled) return false;
 
-        this.removeSelected({index});
+        this.removeSelected({ index });
 
         if (this.filterable && this.visible) {
           this.$refs.input.focus();
@@ -386,7 +386,7 @@
        * @param index
        * @param all
        */
-      removeSelected({index = -1, all = false}) {
+      removeSelected({ index = -1, all = false }) {
         const oldSelected = JSON.stringify(this.selected);
 
         if (this.multiple && index !== -1) {
@@ -409,6 +409,15 @@
        * @param item
        */
       setMultiSelected(item) {
+        {
+          // 简单判断是否重复
+          for (let it of this.selected) {
+            if (it[ it.length - 1 ].value === item.value) {
+              console.error('invalid item:', this.selected, item);
+              return;
+            }
+          }
+        }
         let treePath = [];
         {
           // 找到item对应的tree路径path
@@ -416,11 +425,51 @@
           if (!treePath.length) return;
         }
         {
-          // todo：去除multiSelected中如果是item的子项
+          // selected中如果有item的子项，去除
+          let len = this.selected.length;
+          while (len > 0) {
+            let idx = this.selected[ len - 1 ].findIndex(path => path.value === item.value);
+            if (idx !== -1) {
+              this.removeSelected({ index: len - 1 })
+            }
+
+            len--;
+          }
         }
         {
-          // 添加path
+          // 添加item
           this.selected.push(treePath);
+        }
+        {
+          // item的兄弟节点全部选中，则合并
+          let combine = (newItemPath) => {
+            // 根节点不合并
+            if (newItemPath.length === 1) return;
+
+            // 父节点的所有子节点（即item同一级的所有节点）
+            let parentChildren = treePath[ treePath.length - 2 ].children;
+            let allSelected = true;
+            let allSelectedList = [];
+            for (let child of parentChildren) {
+              let idx = this.selected.findIndex(path => path[ path.length - 1 ].value === child.value);
+              if (idx === -1) {
+                allSelected = false;
+                break;
+              }
+              allSelectedList.push(idx);
+            }
+
+            if (allSelected) {
+              // 移除所有兄弟节点
+              allSelectedList.map(index => {
+                this.removeSelected({ index });
+              })
+              // 添加父节点
+              this.setMultiSelected(treePath[ treePath.length - 2 ]);
+            }
+          }
+
+          combine(treePath);
         }
       },
       resetInputState() {
