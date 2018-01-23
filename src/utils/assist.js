@@ -335,18 +335,16 @@ export function treeRes2cascaderRes(treeOptions, val, attr = 'id') {
  * @param attr
  */
 export function treeRemoveItem(treeData, val, attr = 'id') {
-  let duplicate = treeData;
-  if (!val) return duplicate;
+  if (!val) return;
 
   let find = false;
-  walk(duplicate);
-  return duplicate;
+  walk(treeData);
 
   function walk(list) {
     for (let index = 0; index < list.length; index++) {
       if (findOut(list[index])) {
         list.splice(index, 1);
-        return duplicate;
+        return;
       }
     }
   }

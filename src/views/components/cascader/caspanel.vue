@@ -1,17 +1,24 @@
 <template>
-    <span>
-        <ul v-if="data && data.length" :class="[prefixCls + '-menu']">
-            <Casitem
-                v-for="item in data"
-                :key="getKey()"
-                :prefix-cls="prefixCls"
-                :data="item"
-                :tmp-item="tmpItem"
-                @click.native.stop="handleClickItem(item)"
-                @mouseenter.native.stop="handleHoverItem(item)"></Casitem>
-        </ul><Caspanel v-if="sublist && sublist.length" :prefix-cls="prefixCls" :data="sublist" :disabled="disabled"
-                       :trigger="trigger"></Caspanel>
-    </span>
+  <span>
+    <ul v-if="data && data.length" :class="[prefixCls + '-menu']">
+      <Casitem
+          v-for="item in data"
+          :key="getKey()"
+          :prefix-cls="prefixCls"
+          :data="item"
+          :tmp-item="tmpItem"
+          @click.native.stop="handleClickItem(item)"
+          @mouseenter.native.stop="handleHoverItem(item)"
+      ></Casitem>
+    </ul>
+    <Caspanel v-if="sublist && sublist.length"
+              :prefix-cls="prefixCls"
+              :data="sublist"
+              :disabled="disabled"
+              :trigger="trigger"
+              :onlyLeaf="onlyLeaf"
+    ></Caspanel>
+  </span>
 </template>
 <script>
   import Casitem from './casitem.vue';
@@ -30,6 +37,10 @@
         default() {
           return [];
         }
+      },
+      onlyLeaf: {
+        type: Boolean,
+        default: false,
       },
       disabled: Boolean,
       trigger: String,
@@ -53,6 +64,8 @@
     methods: {
       // 点击表示选中一个选项
       handleClickItem(item) {
+        if (this.onlyLeaf && item.children && item.children.length > 0) return;
+
         this.handleTriggerItem(item, false, true);
       },
       // hover展示子选项

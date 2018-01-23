@@ -59,6 +59,7 @@
               :prefix-cls="prefixCls"
               :data="casPanelOpts"
               :disabled="disabled"
+              :onlyLeaf="onlyLeaf"
           ></Caspanel>
           <div :class="[prefixCls + '-dropdown']" v-show="filterable && query !== '' && querySelections.length">
             <ul :class="[selectPrefixCls + '-dropdown-list']">
@@ -149,6 +150,10 @@
         type: Boolean,
         default: false
       },
+      onlyLeaf: {
+        type: Boolean,
+        default: false,
+      },
     },
     data() {
       return {
@@ -223,7 +228,19 @@
         this.selected.forEach(item => {
           let len = item.length;
           if (len > 0 && item[ len - 1 ].value) {
-            duplicate = treeRemoveItem(duplicate, item[ len - 1 ].value, 'value');
+            treeRemoveItem(duplicate, item[ len - 1 ].value, 'value');
+          }
+
+          if (this.onlyLeaf) {
+            // 【只能选择叶子节点】子节点都被选择的话，就移除父节点
+            let currNode = len - 1;
+            while (currNode > 0) {
+              if (item[ currNode - 1 ].children.length !== 1) break;
+
+              treeRemoveItem(duplicate, item[ currNode - 1 ].value, 'value');
+              currNode--;
+
+            }
           }
         })
 
@@ -469,7 +486,7 @@
             }
           }
 
-          combine(treePath);
+          if (!this.onlyLeaf) combine(treePath);
         }
       },
       resetInputState() {
