@@ -15,7 +15,7 @@
   export default {
     data() {
       return {
-        cascadeOption: [{
+        cascadeOption: [ {
           value: 'beijing',
           label: '北京',
           children: [
@@ -61,8 +61,19 @@
               ]
             }
           ],
-        }],
-        cascaderModel: [],
+        } ],
+        cascaderModel: [
+          [
+            {
+              value: 'beijing',
+              label: '北京',
+            },
+            {
+              value: 'gugong',
+              label: '故宫'
+            }
+          ]
+        ],
       }
     },
     mounted() {

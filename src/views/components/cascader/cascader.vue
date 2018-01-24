@@ -99,7 +99,7 @@
     components: { Drop, Caspanel },
     directives: { clickoutside, TransferDom },
     props: {
-      data: {
+      options: {
         type: Array,
         default() {
           return [];
@@ -169,6 +169,8 @@
         query: '',
         // data的stringify
         stringifyData: '',
+        // 标识value的修改是用于点击而不是prop
+        userValue: true,
         inputLength: 20
       };
     },
@@ -208,9 +210,9 @@
       multiDisplayRender() {
         if (!this.multiple) return [];
 
-        return this.selected.map(item => {
+        return this.selected.map(itemPath => {
           let labels = [];
-          for (let path of item) {
+          for (let path of itemPath) {
             labels.push(path.label);
           }
           return this.renderFormat(labels);
@@ -222,9 +224,9 @@
        * 【多选】排除已选
        */
       casPanelOpts() {
-        if (!this.multiple) return this.data;
+        if (!this.multiple) return this.options;
 
-        let duplicate = deepCopy(this.data);
+        let duplicate = deepCopy(this.options);
         this.selected.forEach(item => {
           let len = item.length;
           if (len > 0 && item[ len - 1 ].value) {
@@ -280,7 +282,7 @@
           }
         }
 
-        getSelections(this.casPanelOpts);
+        getSelections(deepCopy(this.casPanelOpts));
         selections = selections.filter(item => item.label.indexOf(this.query) > -1).map(item => {
           item.display = item.display.replace(new RegExp(this.query, 'g'), `<span>${this.query}</span>`);
           return item;
@@ -435,11 +437,11 @@
             }
           }
         }
-        let treePath = [];
+        let itemPath = [];
         {
           // 找到item对应的tree路径path
-          treePath = treeRes2cascaderRes(this.casPanelOpts, item.value, 'value');
-          if (!treePath.length) return;
+          itemPath = treeRes2cascaderRes(this.casPanelOpts, item.value, 'value');
+          if (!itemPath.length) return;
         }
         {
           // selected中如果有item的子项，去除
@@ -455,7 +457,7 @@
         }
         {
           // 添加item
-          this.selected.push(treePath);
+          this.selected.push(itemPath);
         }
         {
           // item的兄弟节点全部选中，则合并
@@ -464,7 +466,7 @@
             if (newItemPath.length === 1) return;
 
             // 父节点的所有子节点（即item同一级的所有节点）
-            let parentChildren = treePath[ treePath.length - 2 ].children;
+            let parentChildren = itemPath[ itemPath.length - 2 ].children;
             let allSelected = true;
             let allSelectedList = [];
             for (let child of parentChildren) {
@@ -482,11 +484,11 @@
                 this.removeSelected({ index });
               })
               // 添加父节点
-              this.setMultiSelected(treePath[ treePath.length - 2 ]);
+              this.setMultiSelected(itemPath[ itemPath.length - 2 ]);
             }
           }
 
-          if (!this.onlyLeaf) combine(treePath);
+          if (!this.onlyLeaf) combine(itemPath);
         }
       },
       resetInputState() {
@@ -494,7 +496,7 @@
       },
     },
     created() {
-      this.stringifyData = JSON.stringify(this.data);
+      this.stringifyData = JSON.stringify(this.options);
       this.$on('on-selected', item => {
 
         this.setSelected(item);
@@ -532,10 +534,16 @@
         }
       },
       value(val) {
+        this.userValue = false;
         this.selected = val;
         if (!val.length) this.selected = [];
       },
       selected() {
+        if (!this.userValue) {
+          this.userValue = true;
+          return;
+        }
+
         this.$emit('input', this.selected);
 
         this.updateSelected(true); // todo: 如果是prop修改，则通知子组件（两种情况：prop和用户选择）
@@ -543,7 +551,7 @@
       data: {
         deep: true,
         handler() {
-          const stringifyData = JSON.stringify(this.data);
+          const stringifyData = JSON.stringify(this.options);
           if (stringifyData !== this.stringifyData) {
             this.stringifyData = stringifyData;
             this.$nextTick(() => this.updateSelected());
