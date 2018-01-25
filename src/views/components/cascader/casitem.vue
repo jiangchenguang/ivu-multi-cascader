@@ -1,34 +1,55 @@
 <template>
-    <li :class="classes">
-        {{ data.label }}
-        <i v-if="showArrow" class="ivu-icon ivu-icon-ios-arrow-right"></i>
-        <i v-if="showLoading" class="ivu-icon ivu-icon-load-c ivu-load-loop"></i>
-    </li>
+  <li :class="classes">
+    <i v-if="iconShow" :class="iconClazz" style="left: 2px;"></i>
+    {{ data.label }}
+    <i v-if="showArrow" class="ivu-icon ivu-icon-ios-arrow-right"></i>
+    <i v-if="showLoading" class="ivu-icon ivu-icon-load-c ivu-load-loop"></i>
+  </li>
 </template>
+
 <script>
-    export default {
-        name: 'Casitem',
-        props: {
-            data: Object,
-            prefixCls: String,
-            tmpItem: Object
-        },
-        computed: {
-            classes () {
-                return [
-                    `${this.prefixCls}-menu-item`,
-                    {
-                        [`${this.prefixCls}-menu-item-active`]: this.tmpItem.value === this.data.value,
-                        [`${this.prefixCls}-menu-item-disabled`]: this.data.disabled
-                    }
-                ];
-            },
-            showArrow () {
-                return (this.data.children && this.data.children.length) || ('loading' in this.data && !this.data.loading);
-            },
-            showLoading () {
-                return 'loading' in this.data && this.data.loading;
-            }
-        }
-    };
+
+  const validIcon = {
+    0: {
+      clazz: 'ivu-icon-person',
+    },
+    1: {
+      clazz: 'ivu-icon-person-stalker',
+    }
+  }
+
+  export default {
+    name: 'Casitem',
+    props: {
+      data: Object,
+      prefixCls: String,
+      tmpItem: Object,
+    },
+    computed: {
+      classes() {
+        return [
+          `${this.prefixCls}-menu-item`,
+          {
+            [ `${this.prefixCls}-menu-item-active` ]: this.tmpItem.value === this.data.value,
+            [ `${this.prefixCls}-menu-item-disabled` ]: this.data.disabled
+          }
+        ];
+      },
+      iconClazz() {
+        return [
+          'ivu-icon',
+          `${validIcon[ this.data.icon ].clazz}`
+        ]
+      },
+      iconShow() {
+        return !!validIcon[ this.data.icon ]
+      },
+      showArrow() {
+        return (this.data.children && this.data.children.length) || ('loading' in this.data && !this.data.loading);
+      },
+      showLoading() {
+        return 'loading' in this.data && this.data.loading;
+      }
+    }
+  };
 </script>
