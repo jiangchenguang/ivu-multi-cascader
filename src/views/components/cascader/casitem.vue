@@ -1,6 +1,6 @@
 <template>
   <li :class="classes">
-    <i v-if="iconShow" :class="iconClazz" style="left: 2px;"></i>
+    <Icon :type="data.icon" style="left: 2px;" />
     {{ data.label }}
     <i v-if="showArrow" class="ivu-icon ivu-icon-ios-arrow-right"></i>
     <i v-if="showLoading" class="ivu-icon ivu-icon-load-c ivu-load-loop"></i>
@@ -34,15 +34,6 @@
             [ `${this.prefixCls}-menu-item-disabled` ]: this.data.disabled
           }
         ];
-      },
-      iconClazz() {
-        return [
-          'ivu-icon',
-          `${validIcon[ this.data.icon ].clazz}`
-        ]
-      },
-      iconShow() {
-        return !!validIcon[ this.data.icon ]
       },
       showArrow() {
         return (this.data.children && this.data.children.length) || ('loading' in this.data && !this.data.loading);
