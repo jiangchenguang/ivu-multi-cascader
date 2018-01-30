@@ -1,24 +1,26 @@
 <template>
   <div :class="classes" v-clickoutside="handleClose">
     <div :class="[prefixCls + '-rel']" @click="toggleOpen" ref="reference">
-      <div v-if="multiple" :class="selectionCls">
-        <div class="ivu-tag ivu-tag-checked" v-for="(item, index) in multiDisplayRender">
-          <span class="ivu-tag-text">{{ item }}</span>
-          <Icon type="ios-close-empty" @click.native.stop="removeTag(index)"></Icon>
+      <div v-if="multiple" :class="selectionCls" ref="wrapper" style="overflow: hidden;">
+        <div :style="selectWrapperStyle">
+          <div class="ivu-tag ivu-tag-checked" v-for="(item, index) in multiDisplayRender" ref="selected">
+            <span class="ivu-tag-text">{{ item }}</span>
+            <Icon type="ios-close-empty" @click.native.stop="removeTag(index)"></Icon>
+          </div>
+          <input
+              ref="input"
+              type="text"
+              v-model="query"
+              :readonly="!filterable"
+              :disabled="disabled"
+              :class="[selectPrefixCls + '-input']"
+              :style="inputStyle"
+              :placeholder="filterable && !selected.length ? placeholder : ''"
+              autocomplete="off"
+              spellcheck="false"
+              @keydown="resetInputState"
+          >
         </div>
-        <input
-            ref="input"
-            type="text"
-            v-model="query"
-            :readonly="!filterable"
-            :disabled="disabled"
-            :class="[selectPrefixCls + '-input']"
-            :style="inputStyle"
-            :placeholder="filterable && !selected.length ? placeholder : ''"
-            autocomplete="off"
-            spellcheck="false"
-            @keydown="resetInputState"
-        >
       </div>
       <template v-else>
         <i-input
@@ -33,10 +35,13 @@
         <div
             :class="[prefixCls + '-label']"
             v-show="filterable && query === ''"
-            @click="handleFocus">{{ singleDisplayRender }}
+            @click="handleFocus"
+        >
+          {{ singleDisplayRender }}
         </div>
       </template>
 
+      <div class="mask"></div>
       <Icon type="ios-close"
             :class="[prefixCls + '-arrow']"
             v-show="showCloseIcon"
@@ -85,10 +90,10 @@
 <script>
   import Drop from './dropdown.vue';
   import Caspanel from './caspanel.vue';
-  import clickoutside from '../../../directives/clickoutside';
-  import TransferDom from '../../../directives/transfer-dom';
-  import { oneOf, deepCopy, treeRes2cascaderRes, treeRemoveItem } from '../../../utils/assist';
-  import Emitter from '../../../mixins/emitter';
+  import clickoutside from '@/directives/clickoutside';
+  import TransferDom from '@/directives/transfer-dom';
+  import { dom, assist } from '@/utils';
+  import Emitter from '@/mixins/emitter';
 
   const prefixCls = 'ivu-cascader';
   const selectPrefixCls = 'ivu-select';
@@ -121,7 +126,7 @@
       },
       size: {
         validator(value) {
-          return oneOf(value, [ 'small', 'large' ]);
+          return assist.oneOf(value, [ 'small', 'large' ]);
         }
       },
       renderFormat: {
@@ -165,13 +170,15 @@
          * 【单选】路径上item的集合
          * 【多选】每个元素都是对应单选的一个结果
          */
-        selected: this.value,
+        selected: [],
+        // 选项总长度
+        selectTotalLen: 0,
+        // 多选时选项左移
+        selectScroll: 0,
         query: '',
         // data的stringify
         stringifyData: '',
-        // 标识value的修改是用于点击而不是prop
-        userValue: true,
-        inputLength: 20
+        inputLength: 20,
       };
     },
     computed: {
@@ -191,6 +198,12 @@
       selectionCls() {
         return {
           [ `${selectPrefixCls}-selection` ]: this.multiple,
+        }
+      },
+      selectWrapperStyle() {
+        return {
+          position: 'relative',
+          width: `${this.selectTotalLen + 500}px`,
         }
       },
       // 显示清空按钮
@@ -226,22 +239,21 @@
       casPanelOpts() {
         if (!this.multiple) return this.options;
 
-        let duplicate = deepCopy(this.options);
+        let duplicate = assist.deepCopy(this.options);
         this.selected.forEach(item => {
           let len = item.length;
           if (len > 0 && item[ len - 1 ].value) {
-            treeRemoveItem(duplicate, item[ len - 1 ].value, 'value');
+            assist.treeRemoveItem(duplicate, item[ len - 1 ].value, 'value');
           }
 
           if (this.onlyLeaf) {
             // 【只能选择叶子节点】子节点都被选择的话，就移除父节点
             let currNode = len - 1;
             while (currNode > 0) {
-              if (item[ currNode - 1 ].children.length !== 1) break;
+              if (!item[ currNode - 1 ].children || item[ currNode - 1 ].children.length !== 1) break;
 
-              treeRemoveItem(duplicate, item[ currNode - 1 ].value, 'value');
+              assist.treeRemoveItem(duplicate, item[ currNode - 1 ].value, 'value');
               currNode--;
-
             }
           }
         })
@@ -282,7 +294,7 @@
           }
         }
 
-        getSelections(deepCopy(this.casPanelOpts));
+        getSelections(assist.deepCopy(this.casPanelOpts));
         selections = selections.filter(item => item.label.indexOf(this.query) > -1).map(item => {
           item.display = item.display.replace(new RegExp(this.query, 'g'), `<span>${this.query}</span>`);
           return item;
@@ -341,7 +353,7 @@
       emitValue(stringifyOldSelected) {
         if (JSON.stringify(this.selected) === stringifyOldSelected) return;
 
-        this.$emit('on-change', this.selected);
+        this.$emit('input', this.selected);
       },
       handleInput(event) {
         this.query = event.target.value;
@@ -399,6 +411,8 @@
         this.multiple ? this.setMultiSelected(item) : this.setSingleSelected(item);
 
         this.emitValue(oldVal);
+
+        this.keepLastSelectedVisible();
       },
       /**
        * 移除一个或全部选中项
@@ -415,13 +429,49 @@
         }
 
         this.emitValue(oldSelected);
+
+        this.keepLastSelectedVisible();
+      },
+      /**
+       * 保证最后一个可见
+       */
+      keepLastSelectedVisible() {
+        // 单选不滚动
+        if (!this.multiple) return;
+
+        this.$nextTick(() => {
+          let wrapperWidth = dom.getContentWidth(this.$refs.wrapper);
+          let len = this.$refs.selected.length;
+          let last, lastRight, mr;
+
+          if (len > 0
+            && (last = this.$refs.selected[ len - 1 ])
+            && (mr = parseInt(dom.getStyle(last, 'margin-right')))
+            && (lastRight = last.offsetLeft + last.offsetWidth + mr)
+            && lastRight >= wrapperWidth) {
+
+            // 最后一个选项的右边已经超出了wrapper的宽度
+            for (let item of this.$refs.selected) {
+              // 一个选项为滚动单位
+              let move = item.offsetLeft + item.offsetWidth + mr;
+              if (lastRight - move < wrapperWidth) {
+                this.selectScroll = move;
+                break;
+              }
+            }
+          } else {
+
+            // 没有选择或选项没有超过wrapper的内容宽度
+            this.selectScroll = 0;
+          }
+        })
       },
       /**
        * 【单选】设置选中项
        * @param item
        */
       setSingleSelected(item) {
-        this.selected.splice(0, this.selected.length, ...treeRes2cascaderRes(this.casPanelOpts, item.value, 'value'));
+        this.selected.splice(0, this.selected.length, ...assist.treeRes2cascaderRes(this.casPanelOpts, item.value, 'value'));
       },
       /**
        * 【多选】设置选中项
@@ -440,7 +490,7 @@
         let itemPath = [];
         {
           // 找到item对应的tree路径path
-          itemPath = treeRes2cascaderRes(this.casPanelOpts, item.value, 'value');
+          itemPath = assist.treeRes2cascaderRes(this.casPanelOpts, item.value, 'value');
           if (!itemPath.length) return;
         }
         {
@@ -491,11 +541,41 @@
           if (!this.onlyLeaf) combine(itemPath);
         }
       },
+      /**
+       * 设置输入框的长度
+       */
       resetInputState() {
         this.inputLength = this.$refs.input.value.length * 12 + 20;
       },
+      /**
+       * 设置选中项的总长度
+       */
+      resetSelectTotalLen() {
+        if (!this.multiple) return;
+
+        this.$nextTick(() => {
+          this.selectTotalLen = 0;
+
+          for (let item of this.$refs.selected) {
+            this.selectTotalLen += dom.getTotalWidth(item);
+          }
+        })
+      },
     },
     created() {
+      // 将prop传入的选中项 在options中找到并保存（防止传入的选项少属性）
+      if (this.multiple) {
+        for (let item of this.value) {
+          if (item.length > 0) {
+            this.setSelected(item[ item.length - 1 ]);
+          }
+        }
+      } else {
+        if (this.value.length > 0) {
+          this.setSelected(this.value[ this.value.length - 1 ])
+        }
+      }
+
       this.stringifyData = JSON.stringify(this.options);
       this.$on('on-selected', item => {
 
@@ -511,19 +591,15 @@
       this.updateSelected(true);
     },
     watch: {
-      visible(val) {
-        if (val) {
+      visible() {
+        if (this.visible) {
           if (this.multiple) {
             this.$refs.input.focus();
-          } else {
-            if (this.selected.length) {
-              this.updateSelected();
-            }
-            if (this.transfer) {
-              this.$refs.drop.update();
-            }
+            this.$refs.wrapper.scrollLeft = this.selectScroll;
           }
         } else {
+          if (this.multiple) this.$refs.wrapper.scrollLeft = 0;
+
           if (this.filterable) {
             this.query = '';
             this.$refs.input.currentValue = '';
@@ -533,20 +609,31 @@
           }
         }
       },
-      value(val) {
-        this.userValue = false;
-        this.selected = val;
-        if (!val.length) this.selected = [];
+      selectScroll() {
+        this.$refs.wrapper.scrollLeft = this.selectScroll;
       },
-      selected() {
-        if (!this.userValue) {
-          this.userValue = true;
-          return;
+      value() {
+        if (assist.isEqualArray(this.value, this.selected, false)) return;
+
+        this.selected.splice(0, this.selected.length);
+
+        if (this.multiple) {
+          for (let item of this.value) {
+            if (item.length > 0) {
+              this.setSelected(item[ item.length - 1 ]);
+            }
+          }
+        } else {
+          if (this.value.length > 0) {
+            this.setSelected(this.value[ this.value.length - 1 ])
+          }
         }
 
-        this.$emit('input', this.selected);
-
-        this.updateSelected(true); // todo: 如果是prop修改，则通知子组件（两种情况：prop和用户选择）
+        // todo: 如果是prop修改，则通知子组件（两种情况：prop和用户选择）
+        this.updateSelected(true);
+      },
+      selected() {
+        this.resetSelectTotalLen();
       },
       data: {
         deep: true,
@@ -561,3 +648,15 @@
     }
   };
 </script>
+
+<style>
+  .mask {
+    border-radius: 4px;
+    position: absolute;
+    right: 1px;
+    top: 1px;
+    height: calc(100% - 2px);
+    width: 22px;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 1));
+  }
+</style>

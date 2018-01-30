@@ -360,3 +360,32 @@ export function treeRemoveItem(treeData, val, attr = 'id') {
     }
   }
 }
+
+/**
+ * 判断两个数组内容是否相等
+ * @param arrA
+ * @param arrB
+ * @param order
+ * @returns {boolean}
+ */
+export function isEqualArray(arrA, arrB, order = false) {
+  if (arrA.length !== arrB.length)
+    return false;
+
+  if (!order) {
+    for (let a of arrA) {
+      if (!arrB.includes(a)) {
+        return false;
+      }
+    }
+  }
+  else {
+    for (let index = 0; index < arrA.length; index++) {
+      if (arrA[ index ] !== arrB[ index ]) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
