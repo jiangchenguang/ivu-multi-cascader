@@ -11,7 +11,7 @@ module.exports = merge(wpBaseConfig, {
   },
   output: {
     path: path.resolve(__dirname, '../dist'),
-    filename: 'bomc.js',
+    filename: 'multi-cascader.js',
     library: 'multiCascader',
     libraryTarget: 'umd',
   },

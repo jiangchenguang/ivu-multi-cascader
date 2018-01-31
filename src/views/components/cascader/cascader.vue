@@ -129,10 +129,15 @@
           return assist.oneOf(value, [ 'small', 'large' ]);
         }
       },
+      // 分隔符
+      separator: {
+        type: String,
+        default: ' / ',
+      },
       renderFormat: {
         type: Function,
         default(label) {
-          return label.join(' / ');
+          return label.join(`${this.separator}`);
         }
       },
       filterable: {
@@ -155,6 +160,10 @@
         type: Boolean,
         default: false
       },
+      singleLineMode: {
+        type: Boolean,
+        default: false,
+      },
       onlyLeaf: {
         type: Boolean,
         default: false,
@@ -171,10 +180,16 @@
          * 【多选】每个元素都是对应单选的一个结果
          */
         selected: [],
-        // 选项总长度
-        selectTotalLen: 0,
-        // 多选时选项左移
-        selectScroll: 0,
+        // 滚动相关
+        // 如启用单行显示 且 选项宽度大于容器内容宽度，则会左移以显示最后一个选项，且是一个一个选项移动
+        scroll: {
+          // 选项总长度
+          selectTotalLen: 0,
+          // selected中第index个选项显示在第一个位置
+          firstPosIndex: 0,
+          // 具体容器滚动的长度（根据scroll）
+          scrollLeft: 0,
+        },
         query: '',
         // data的stringify
         stringifyData: '',
@@ -203,7 +218,7 @@
       selectWrapperStyle() {
         return {
           position: 'relative',
-          width: `${this.selectTotalLen + 500}px`,
+          width: !this.singleLineMode ? '100%' : `${this.scroll.selectTotalLen + 500}px`,
         }
       },
       // 显示清空按钮
@@ -264,15 +279,15 @@
       querySelections() {
         let selections = [];
 
-        function getSelections(onlyLeaf, arr, label, value) {
+        let getSelections = (arr, label, value) => {
           for (let i = 0; i < arr.length; i++) {
             let item = arr[ i ];
 
-            item.__label = label ? label + ' / ' + item.label : item.label;
-            item.__value = value ? value + ',' + item.value : item.value;
+            item.__label = label ? label + `${this.separator}` + item.label : item.label;
+            item.__value = value ? value + item.value : item.value;
 
             if (item.children && item.children.length) {
-              if (!onlyLeaf) {
+              if (!this.onlyLeaf) {
                 selections.push({
                   label: item.__label,
                   value: item.__value,
@@ -280,7 +295,7 @@
                   disabled: !!item.disabled
                 });
               }
-              getSelections(onlyLeaf, item.children, item.__label, item.__value);
+              getSelections(item.children, item.__label, item.__value);
             } else {
               selections.push({
                 label: item.__label,
@@ -292,7 +307,7 @@
           }
         }
 
-        getSelections(this.onlyLeaf, assist.deepCopy(this.casPanelOpts));
+        getSelections(assist.deepCopy(this.casPanelOpts));
 
         selections = selections.filter(item => {
           return item.label.indexOf(this.query) > -1
@@ -405,19 +420,6 @@
         this.broadcast('Drop', 'on-update-popper');
       },
       /**
-       * 添加一个选中项
-       * @param item
-       */
-      setSelected(item) {
-        const oldVal = JSON.stringify(this.selected);
-
-        this.multiple ? this.setMultiSelected(item) : this.setSingleSelected(item);
-
-        this.emitValue(oldVal);
-
-        this.keepLastSelectedVisible();
-      },
-      /**
        * 移除一个或全部选中项
        * @param index
        * @param all
@@ -432,42 +434,17 @@
         }
 
         this.emitValue(oldSelected);
-
-        this.keepLastSelectedVisible();
       },
       /**
-       * 保证最后一个可见
+       * 添加一个选中项
+       * @param item
        */
-      keepLastSelectedVisible() {
-        // 单选不滚动
-        if (!this.multiple) return;
+      setSelected(item) {
+        const oldVal = JSON.stringify(this.selected);
 
-        this.$nextTick(() => {
-          let wrapperWidth = dom.getContentWidth(this.$refs.wrapper);
-          let len = this.$refs.selected.length;
-          let last, lastRight, mr;
+        this.multiple ? this.setMultiSelected(item) : this.setSingleSelected(item);
 
-          if (len > 0
-            && (last = this.$refs.selected[ len - 1 ])
-            && (mr = parseInt(dom.getStyle(last, 'margin-right')))
-            && (lastRight = last.offsetLeft + last.offsetWidth + mr)
-            && lastRight >= wrapperWidth) {
-
-            // 最后一个选项的右边已经超出了wrapper的宽度
-            for (let item of this.$refs.selected) {
-              // 一个选项为滚动单位
-              let move = item.offsetLeft + item.offsetWidth + mr;
-              if (lastRight - move < wrapperWidth) {
-                this.selectScroll = move;
-                break;
-              }
-            }
-          } else {
-
-            // 没有选择或选项没有超过wrapper的内容宽度
-            this.selectScroll = 0;
-          }
-        })
+        this.emitValue(oldVal);
       },
       /**
        * 【单选】设置选中项
@@ -554,15 +531,79 @@
        * 设置选中项的总长度
        */
       resetSelectTotalLen() {
-        if (!this.multiple) return;
+        if (!this.multiple || !this.singleLineMode) return;
 
         this.$nextTick(() => {
-          this.selectTotalLen = 0;
+          this.scroll.selectTotalLen = 0;
 
           for (let item of this.$refs.selected) {
-            this.selectTotalLen += dom.getTotalWidth(item);
+            this.scroll.selectTotalLen += dom.getTotalWidth(item);
           }
         })
+      },
+      /**
+       * 根据选项长度自动确定一个值，使得最后一个选项可见
+       */
+      selectScrollAuto() {
+        // 单选 或 多行显示 直接返回
+        if (!this.multiple || !this.singleLineMode) return;
+
+        this.$nextTick(() => {
+          let wrapperWidth = dom.getContentWidth(this.$refs.wrapper);
+          let len = this.$refs.selected.length;
+          let last, lastRight, mr;
+
+          if (len > 0
+            && (last = this.$refs.selected[ len - 1 ])
+            && (mr = parseInt(dom.getStyle(last, 'margin-right')))
+            && (lastRight = last.offsetLeft + last.offsetWidth + mr)
+            && lastRight >= wrapperWidth) {
+
+            // 最后一个选项的右边已经超出了wrapper的宽度
+            for (let [ index, item ] of this.$refs.selected.entries()) {
+              // 一个选项为滚动单位
+              let scrollLeft = item.offsetLeft + item.offsetWidth + mr;
+              if (lastRight - scrollLeft < wrapperWidth) {
+                this.scroll.firstPosIndex = index + 1;
+                break;
+              }
+            }
+          } else {
+            // 没有选择或选项没有超过wrapper的内容宽度
+            this.scroll.firstPosIndex = 0;
+          }
+        })
+      },
+      /**
+       * 选项滚动（向左或向右）
+       * @param scrollLeft
+       */
+      selectedScroll(scrollLeft = true) {
+        if (scrollLeft && this.scroll.firstPosIndex > 0) {
+          this.scroll.firstPosIndex--;
+        } else if (!scrollLeft && this.scroll.firstPosIndex < this.$refs.selected.length - 1) {
+          this.scroll.firstPosIndex++;
+        }
+      },
+      /**
+       * 处理按键
+       * @param e
+       */
+      handleKeyDown(e) {
+        if (this.visible) {
+          switch (e.keyCode) {
+            case 37:
+              // arrow left
+              e.preventDefault();
+              this.selectedScroll(true);
+              break;
+            case 39:
+              // arrow right
+              e.preventDefault();
+              this.selectedScroll(false);
+              break;
+          }
+        }
       },
     },
     created() {
@@ -592,13 +633,19 @@
     mounted() {
       // 初始化设置选中项
       this.updateSelected(true);
+      document.addEventListener('keydown', this.handleKeyDown);
+    },
+    beforeDestroy() {
+      document.removeEventListener('keydown', this.handleKeyDown);
     },
     watch: {
       visible() {
         if (this.visible) {
           if (this.multiple) {
             this.$refs.input.focus();
-            this.$refs.wrapper.scrollLeft = this.selectScroll;
+
+            this.$refs.wrapper.scrollLeft = this.scroll.scrollLeft;
+            this.selectScrollAuto(); // 防止用户移动过
           }
         } else {
           if (this.multiple) this.$refs.wrapper.scrollLeft = 0;
@@ -612,8 +659,20 @@
           }
         }
       },
-      selectScroll() {
-        this.$refs.wrapper.scrollLeft = this.selectScroll;
+      'scroll.scrollLeft': function () {
+        this.$refs.wrapper.scrollLeft = this.scroll.scrollLeft;
+      },
+      'scroll.firstPosIndex': function () {
+        if (this.scroll.firstPosIndex < 0
+          || this.scroll.firstPosIndex > this.$refs.selected.length) return;
+
+        if (this.scroll.firstPosIndex === 0) {
+          this.scroll.scrollLeft = 0;
+        } else {
+          let item = this.$refs.selected[ this.scroll.firstPosIndex - 1 ];
+          let mr = parseInt(dom.getStyle(item, 'margin-right'));
+          this.scroll.scrollLeft = item.offsetLeft + item.offsetWidth + mr;
+        }
       },
       value() {
         if (assist.isEqualArray(this.value, this.selected, false)) return;
@@ -636,6 +695,7 @@
         this.updateSelected(true);
       },
       selected() {
+        this.selectScrollAuto();
         this.resetSelectTotalLen();
       },
       data: {
