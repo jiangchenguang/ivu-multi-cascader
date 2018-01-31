@@ -74,7 +74,7 @@
                     {[selectPrefixCls + '-item-disabled']: item.disabled}
                   ]"
                   v-for="(item, index) in querySelections"
-                  @click="handleSelectItem(index)" v-html="item.display"
+                  @click="handleSelectItem(index)" v-html="item.label"
               ></li>
             </ul>
           </div>
@@ -264,7 +264,7 @@
       querySelections() {
         let selections = [];
 
-        function getSelections(arr, label, value) {
+        function getSelections(onlyLeaf, arr, label, value) {
           for (let i = 0; i < arr.length; i++) {
             let item = arr[ i ];
 
@@ -272,21 +272,19 @@
             item.__value = value ? value + ',' + item.value : item.value;
 
             if (item.children && item.children.length) {
-              selections.push({
-                label: item.__label,
-                value: item.__value,
-                display: item.__label,
-                item: item,
-                disabled: !!item.disabled
-              });
-              getSelections(item.children, item.__label, item.__value);
-              delete item.__label;
-              delete item.__value;
+              if (!onlyLeaf) {
+                selections.push({
+                  label: item.__label,
+                  value: item.__value,
+                  item: item,
+                  disabled: !!item.disabled
+                });
+              }
+              getSelections(onlyLeaf, item.children, item.__label, item.__value);
             } else {
               selections.push({
                 label: item.__label,
                 value: item.__value,
-                display: item.__label,
                 item: item,
                 disabled: !!item.disabled
               });
@@ -294,12 +292,17 @@
           }
         }
 
-        getSelections(assist.deepCopy(this.casPanelOpts));
-        selections = selections.filter(item => item.label.indexOf(this.query) > -1).map(item => {
-          item.display = item.display.replace(new RegExp(this.query, 'g'), `<span>${this.query}</span>`);
+        getSelections(this.onlyLeaf, assist.deepCopy(this.casPanelOpts));
+
+        selections = selections.filter(item => {
+          return item.label.indexOf(this.query) > -1
+            || item.value.indexOf(this.query) > -1;
+        });
+
+        return selections.map(item => {
+          item.label = item.label.replace(new RegExp(this.query, 'g'), `<span>${this.query}</span>`);
           return item;
         });
-        return selections;
       },
       inputStyle() {
         let style = {};
