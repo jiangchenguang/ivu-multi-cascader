@@ -22,8 +22,8 @@
 </template>
 <script>
   import Casitem from './casitem.vue';
-  import Emitter from '../../../mixins/emitter';
-  import { findComponentUpward, findComponentDownward } from '../../../utils/assist';
+  import Emitter from '@/mixins/emitter';
+  import { findComponentUpward, findComponentDownward } from '@/utils/assist';
 
   let key = 1;
 

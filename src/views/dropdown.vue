@@ -7,7 +7,7 @@
   import Vue from 'vue';
 
   const isServer = Vue.prototype.$isServer;
-  import { getStyle } from '../../../utils/assist';
+  import { getStyle } from '@/utils/assist';
 
   const Popper = isServer
     ? function () {}
