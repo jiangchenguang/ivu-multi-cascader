@@ -416,8 +416,6 @@
         if (this.filterable && this.visible) {
           this.$refs.input.focus();
         }
-
-        this.broadcast('Drop', 'on-update-popper');
       },
       /**
        * 移除一个或全部选中项
@@ -545,21 +543,25 @@
        * 根据选项长度自动确定一个值，使得最后一个选项可见
        */
       selectScrollAuto() {
-        // 单选 或 多行显示 直接返回
+        // [单选][多行模式]直接返回
         if (!this.multiple || !this.singleLineMode) return;
 
         this.$nextTick(() => {
           let wrapperWidth = dom.getContentWidth(this.$refs.wrapper);
-          let len = this.$refs.selected.length;
-          let last, lastRight, mr;
+          let len, last, lastRight, mr;
 
-          if (len > 0
+          if (this.$refs.selected
+            && (len = this.$refs.selected.length)
+            && len > 0
             && (last = this.$refs.selected[ len - 1 ])
             && (mr = parseInt(dom.getStyle(last, 'margin-right')))
             && (lastRight = last.offsetLeft + last.offsetWidth + mr)
             && lastRight >= wrapperWidth) {
-
-            // 最后一个选项的右边已经超出了wrapper的宽度
+            /**
+             * 若初始value为空，此时$refs没有selected属性，而不是空数组
+             * selected不为空
+             * 最后一个选项的右边界 超过 包围框内容区
+             */
             for (let [ index, item ] of this.$refs.selected.entries()) {
               // 一个选项为滚动单位
               let scrollLeft = item.offsetLeft + item.offsetWidth + mr;
@@ -569,7 +571,7 @@
               }
             }
           } else {
-            // 没有选择或选项没有超过wrapper的内容宽度
+            // 未超过的情况
             this.scroll.firstPosIndex = 0;
           }
         })
