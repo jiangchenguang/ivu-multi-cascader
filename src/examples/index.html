@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>test</title>
+  <meta charset="utf-8">
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <link rel="stylesheet" type="text/css" href="http://unpkg.com/iview/dist/styles/iview.css">
+  <script type="text/javascript" src="http://unpkg.com/iview/dist/iview.min.js"></script>
+  <script src="./multi-cascader.js"></script>
+</head>
+<body>
+<div id="app">
+  <Multi-cascader :options="cascadeOption"
+                  v-model="cascaderModel"
+                  filterable
+                  only-leaf
+                  multiple
+                  single-line-mode
+                  separator="-"
+  ></Multi-cascader>
+</div>
+<script>
+  new Vue({
+    el: '#app',
+    data: {
+      leaf: true,
+      cascadeOption: [
+        {
+          value: 'beijing',
+          label: '北京',
+          icon: 'person-stalker',
+          children: [
+            {
+              value: 'gugong',
+              label: '故宫',
+              icon: 'person',
+            },
+            {
+              value: 'tiantan',
+              label: '天坛',
+              icon: 'person',
+            },
+            {
+              value: 'wangfujing',
+              label: '王府井',
+              icon: 'person',
+            }
+          ]
+        }, {
+          value: 'jiangsu',
+          label: '江苏',
+          icon: 'person-stalker',
+          children: [
+            {
+              value: 'nanjing',
+              label: '南京',
+              icon: 'person-stalker',
+              children: [
+                {
+                  value: 'fuzimiao',
+                  label: '夫子庙',
+                  icon: 'person',
+                }
+              ]
+            },
+            {
+              value: 'suzhou',
+              label: '苏州',
+              icon: 'person-stalker',
+              children: [
+                {
+                  value: 'zhuozhengyuan',
+                  label: '拙政园',
+                  icon: 'person',
+                },
+                {
+                  value: 'shizilin',
+                  label: '狮子林',
+                  icon: 'person',
+                }
+              ]
+            }
+          ],
+        }
+      ],
+      cascaderModel: [
+        [
+          {
+            value: 'jiangsu',
+            label: '江苏',
+          },
+          {
+            value: 'nanjing',
+            label: '南京'
+          },
+          {
+            value: 'fuzimiao',
+            label: '夫子庙'
+          }
+        ]
+      ],
+    },
+    watch: {
+      cascaderModel() {
+        console.log('change:', this.cascaderModel);
+      }
+    }
+  })
+</script>
+</body>
+</html>

@@ -1,12 +1,11 @@
-import 'babel-polyfill';
-import Vue from 'vue';
-import test from './test';
-import iView from 'iview';
-import 'iview/dist/styles/iview.css';
+import MultiCascader from './views/components/cascader';
 
-Vue.use(iView);
+function install (Vue) {
+  Vue.component('MultiCascader', MultiCascader);
+}
 
-new Vue({
-  el: '#app',
-  render: h => h(test),
-})
+if (typeof window !== 'undefined' && window.Vue) {
+  install(window.Vue)
+}
+
+export { MultiCascader };
