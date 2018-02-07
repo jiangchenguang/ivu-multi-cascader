@@ -59,10 +59,11 @@
           v-transfer-dom>
         <div>
           <Caspanel
-              v-show="!filterable || (filterable && query === '')"
               ref="caspanel"
-              :prefix-cls="prefixCls"
+              v-show="!filterable || (filterable && query === '')"
               :data="casPanelOpts"
+              :pathDeep="0"
+              :prefix-cls="prefixCls"
               :disabled="disabled"
               :onlyLeaf="onlyLeaf"
           ></Caspanel>
@@ -129,7 +130,6 @@
           return assist.oneOf(value, [ 'small', 'large' ]);
         }
       },
-      // 分隔符
       separator: {
         type: String,
         default: ' / ',
@@ -191,8 +191,10 @@
           scrollLeft: 0,
         },
         query: '',
+        // 鼠标悬浮路径
+        hoverPath: [],
         // data的stringify
-        stringifyData: '',
+        stringifyOptions: '',
         inputLength: 20,
       };
     },
@@ -247,59 +249,88 @@
         })
       },
       /**
-       * 动态选项
-       * 【单选】直接使用data
-       * 【多选】排除已选
+       * 复制一份options，但根据selected为所有选中项做标记
        */
       casPanelOpts() {
-        if (!this.multiple) return this.options;
+        // 哪个元素选中了就做一个标记
+        let makeSelected = (selectedPath, options) => {
+          let currNode = options;
+          let len = selectedPath.length;
+          for (let [ index, item ] of selectedPath.entries()) {
+            currNode = currNode.find(i => i.value === item.value);
+            if (!currNode) return;
 
-        let duplicate = assist.deepCopy(this.options);
-        this.selected.forEach(item => {
-          let len = item.length;
-          if (len > 0 && item[ len - 1 ].value) {
-            assist.treeRemoveItem(duplicate, item[ len - 1 ].value, 'value');
+            if (index < len - 1) currNode = currNode.children;
+            else currNode.selected = true;
           }
+        };
+        // 是否parent所有的子节点都选中了
+        let childrenAllSelected = (parentPath, options) => {
+          let currNode = null;
+          for (let item of parentPath) {
+            currNode = !!currNode
+              ? currNode.children ? currNode.children : []
+              : options;
+            currNode = currNode.find(i => i.value === item.value);
+            if (!currNode) return false;
+          }
+
+          return currNode.children.every(i => !!i.selected);
+        };
+
+
+        let optionsDup = assist.deepCopy(this.options);
+        let selectedDup = assist.deepCopy(this.multiple ? this.selected : [ this.selected ]);
+
+        selectedDup.forEach(item => {
+          makeSelected(item, optionsDup);
 
           if (this.onlyLeaf) {
             // 【只能选择叶子节点】子节点都被选择的话，就移除父节点
-            let currNode = len - 1;
+            let currNode = item.length - 1;
             while (currNode > 0) {
-              if (!item[ currNode - 1 ].children || item[ currNode - 1 ].children.length !== 1) break;
-
-              assist.treeRemoveItem(duplicate, item[ currNode - 1 ].value, 'value');
-              currNode--;
+              let parentPath = item.slice(0, currNode);
+              if (childrenAllSelected(parentPath, optionsDup)) {
+                makeSelected(parentPath, optionsDup);
+                currNode--;
+              } else {
+                break;
+              }
             }
           }
         })
 
-        return duplicate;
+        return optionsDup;
       },
       // 过滤后的选项
       querySelections() {
         let selections = [];
 
-        let getSelections = (arr, label, value) => {
-          for (let i = 0; i < arr.length; i++) {
-            let item = arr[ i ];
+        let getSelections = (arr, label, value, path = []) => {
+          for (let item of arr) {
+            if (!!item.selected) continue;
 
-            item.__label = label ? label + `${this.separator}` + item.label : item.label;
+            item.__label = label ? `${label}${this.separator}${item.label}` : item.label;
             item.__value = value ? value + item.value : item.value;
+            item.__path = path.concat([item]);
 
+            // todo：如果父节点disabled，则不现实，但需要显示子节点项目（没有disable的话）
             if (item.children && item.children.length) {
               if (!this.onlyLeaf) {
                 selections.push({
                   label: item.__label,
                   value: item.__value,
+                  path: item.__path,
                   item: item,
                   disabled: !!item.disabled
                 });
               }
-              getSelections(item.children, item.__label, item.__value);
+              getSelections(item.children, item.__label, item.__value, item.__path);
             } else {
               selections.push({
                 label: item.__label,
                 value: item.__value,
+                path: item.__path,
                 item: item,
                 disabled: !!item.disabled
               });
@@ -385,7 +416,7 @@
         this.query = '';
         this.$refs.input.currentValue = '';
 
-        this.setSelected(item.item);
+        this.setSelected(item.path);
 
         this.handleClose();
       },
@@ -434,89 +465,133 @@
         this.emitValue(oldSelected);
       },
       /**
-       * 添加一个选中项
-       * @param item
+       * 添加单个选中项
+       * @param itemPath
+       * @param ifInit
        */
-      setSelected(item) {
+      // todo: jcg 整合初始化和后期设置
+      setSelected(itemPath, ifInit = false) {
         const oldVal = JSON.stringify(this.selected);
+        /**
+         * 不管是prop还是用户点击都要格式化
+         * 如果是prop的情况，对象可能缺少属性
+         * 如果是用户点击的情况，对象可能有多余的属性
+         */
+        let select = this.format2OptionObjPath(itemPath);
+        if (!select.length) return;
 
-        this.multiple ? this.setMultiSelected(item) : this.setSingleSelected(item);
+        let duplicate = assist.deepCopy(select);
+        this.multiple ? this.setMultiSelected(duplicate) : this.setSingleSelected(duplicate);
+
+        // 如果新选中节点的父节点的所有子节点都被选中，则合并，且向上递归。
+        if (!this.onlyLeaf) this.combine(duplicate);
 
         this.emitValue(oldVal);
       },
       /**
-       * 【单选】设置选中项
-       * @param item
+       * userPath中的对象并非是options中对象（缺少属性或有多余的属性）
+       * 根据value取options中的对象组成的对象
        */
-      setSingleSelected(item) {
-        this.selected.splice(0, this.selected.length, ...assist.treeRes2cascaderRes(this.casPanelOpts, item.value, 'value'));
+      format2OptionObjPath(userPath) {
+        let selectedPath = [];
+        let currNode = this.options;
+        let find = true;
+        for (let item of userPath) {
+          currNode = currNode.find(i => i.value === item.value);
+          if (currNode) {
+            selectedPath.push(currNode);
+            currNode = currNode.children;
+          } else {
+            find = false;
+            break;
+          }
+        }
+
+        return find ? selectedPath : [];
+      },
+      /**
+       * 【单选】设置选中项
+       * @param selectedPath
+       */
+      setSingleSelected(selectedPath) {
+        this.selected.splice(0, this.selected.length, ...selectedPath);
       },
       /**
        * 【多选】设置选中项
-       * @param item
+       * @param selectedPath
        */
-      setMultiSelected(item) {
+      setMultiSelected(selectedPath) {
+        if (!selectedPath.length) return;
         {
-          // 简单判断是否重复
-          for (let it of this.selected) {
-            if (it[ it.length - 1 ].value === item.value) {
-              console.error('invalid item:', this.selected, item);
-              return;
-            }
-          }
-        }
-        let itemPath = [];
-        {
-          // 找到item对应的tree路径path
-          itemPath = assist.treeRes2cascaderRes(this.casPanelOpts, item.value, 'value');
-          if (!itemPath.length) return;
+          // todo: jcg判断item是否已经被选择
+          // for (let it of this.selected) {
+          //   if (it[ it.length - 1 ].value === item.value) {
+          //     console.error('invalid item:', this.selected, item);
+          //     return;
+          //   }
+          // }
         }
         {
-          // selected中如果有item的子项，去除
-          let len = this.selected.length;
-          while (len > 0) {
-            let idx = this.selected[ len - 1 ].findIndex(path => path.value === item.value);
-            if (idx !== -1) {
-              this.removeSelected({ index: len - 1 })
-            }
-
-            len--;
+          // 在能选到父节点的情况下，假设selected存在selectedItem的子项，去除
+          if (!this.onlyLeaf) {
+            this.removeChildren(selectedPath);
           }
         }
         {
-          // 添加item
-          this.selected.push(itemPath);
+          // 添加选中项
+          this.selected.push(selectedPath);
         }
-        {
-          // item的兄弟节点全部选中，则合并
-          let combine = (newItemPath) => {
-            // 根节点不合并
-            if (newItemPath.length === 1) return;
 
-            // 父节点的所有子节点（即item同一级的所有节点）
-            let parentChildren = itemPath[ itemPath.length - 2 ].children;
-            let allSelected = true;
-            let allSelectedList = [];
-            for (let child of parentChildren) {
-              let idx = this.selected.findIndex(path => path[ path.length - 1 ].value === child.value);
-              if (idx === -1) {
-                allSelected = false;
-                break;
-              }
-              allSelectedList.push(idx);
-            }
+      },
+      /**
+       * selected中只要是item的后代节点，则移除
+       * @param itemPath
+       */
+      removeChildren(itemPath) {
+        let isChild = (selectItem) => {
+          for (let [ deep, item ] of itemPath.entries()) {
+            if (item.value !== selectItem[ deep ].value) return false;
+          }
+          return true;
+        };
 
-            if (allSelected) {
-              // 移除所有兄弟节点
-              allSelectedList.map(index => {
-                this.removeSelected({ index });
-              })
-              // 添加父节点
-              this.setMultiSelected(itemPath[ itemPath.length - 2 ]);
-            }
+        let parent = itemPath[ itemPath.length - 1 ];
+        if (!parent.children || !parent.children.length) return;// 叶子节点直接返回
+
+        // 必须从后向前删除
+        for (let index = this.selected.length - 1; index >= 0; index--) {
+          if (isChild(this.selected[ index ])) {
+            this.removeSelected({ index });
+          }
+        }
+      },
+      /**
+       * 如果newItem的兄弟全部被选中，则合并成父节点
+       */
+      combine(newItemPath) {
+        // 是否parent所有的子节点都选中了
+        let childrenAllSelected = (parentPath) => {
+          let currNode = null;
+          for (let item of parentPath) {
+            currNode = !!currNode
+              ? currNode.children ? currNode.children : []
+              : this.casPanelOpts;
+            currNode = currNode.find(i => i.value === item.value);
+            if (!currNode) return false;
           }
 
-          if (!this.onlyLeaf) combine(itemPath);
+          return currNode.children.every(i => !!i.selected);
+        };
+
+
+        // 根节点不合并
+        if (newItemPath.length === 1) return;
+
+        // 父节点的所有子节点（即item同一级的所有节点）
+        let parentPath = newItemPath.slice(0, newItemPath.length - 1);
+        if (childrenAllSelected(parentPath)) {
+          this.removeChildren(parentPath);
+          this.setSelected(parentPath);
         }
       },
       /**
@@ -609,27 +684,34 @@
       },
     },
     created() {
+      this.stringifyOptions = JSON.stringify(this.options);
+
       // 将prop传入的选中项 在options中找到并保存（防止传入的选项少属性）
       if (this.multiple) {
         for (let item of this.value) {
           if (item.length > 0) {
-            this.setSelected(item[ item.length - 1 ]);
+            this.setSelected(item, true);
           }
         }
       } else {
         if (this.value.length > 0) {
-          this.setSelected(this.value[ this.value.length - 1 ])
+          this.setSelected(this.value)
         }
       }
 
-      this.stringifyData = JSON.stringify(this.options);
       this.$on('on-selected', item => {
+        console.log('hover path:', this.hoverPath);
 
-        this.setSelected(item);
+        this.setSelected(this.hoverPath);
 
         if (this.filterable) {
           this.$refs.input.focus();
         }
+      });
+
+      this.$on('on-hover', para => {
+        let { pathDeep, item } = para;
+        this.hoverPath.splice(pathDeep, this.hoverPath.length - pathDeep, item);
       })
     },
     mounted() {
@@ -649,6 +731,10 @@
             this.$refs.wrapper.scrollLeft = this.scroll.scrollLeft;
             this.selectScrollAuto(); // 防止用户移动过
           }
+
+          if (this.transfer) {
+            this.$refs.drop.update();
+          }
         } else {
           if (this.multiple) this.$refs.wrapper.scrollLeft = 0;
 
@@ -656,6 +742,7 @@
             this.query = '';
             this.$refs.input.currentValue = '';
           }
+
           if (this.transfer) {
             this.$refs.drop.destroy();
           }
@@ -676,40 +763,41 @@
           this.scroll.scrollLeft = item.offsetLeft + item.offsetWidth + mr;
         }
       },
-      value() {
-        if (assist.isEqualArray(this.value, this.selected, false)) return;
-
-        this.selected.splice(0, this.selected.length);
-
-        if (this.multiple) {
-          for (let item of this.value) {
-            if (item.length > 0) {
-              this.setSelected(item[ item.length - 1 ]);
-            }
-          }
-        } else {
-          if (this.value.length > 0) {
-            this.setSelected(this.value[ this.value.length - 1 ])
-          }
-        }
-
-        // todo: 如果是prop修改，则通知子组件（两种情况：prop和用户选择）
-        this.updateSelected(true);
-      },
       selected() {
         this.selectScrollAuto();
         this.resetSelectTotalLen();
       },
-      data: {
-        deep: true,
-        handler() {
-          const stringifyData = JSON.stringify(this.options);
-          if (stringifyData !== this.stringifyData) {
-            this.stringifyData = stringifyData;
-            this.$nextTick(() => this.updateSelected());
-          }
-        }
-      }
+      // value() {
+      //   if (assist.isEqualArray(this.value, this.selected, false)) return;
+      //
+      //   this.selected.splice(0, this.selected.length);
+      //
+      //   if (this.multiple) {
+      //     for (let item of this.value) {
+      //       if (item.length > 0) {
+      //         this.setSelected(item);
+      //       }
+      //     }
+      //   } else {
+      //     if (this.value.length > 0) {
+      //       this.setSelected(this.value)
+      //     }
+      //   }
+      //
+      //   // todo: 如果是prop修改，则通知子组件（两种情况：prop和用户选择）
+      //   this.updateSelected(true);
+      // },
+      //     // todo: jcg 支持value options的动态响应
+      // options: {
+      //   deep: true,
+      //   handler: function () {
+      //     const stringifyOptions = JSON.stringify(this.options);
+      //     if (stringifyOptions !== this.stringifyOptions) {
+      //       this.stringifyOptions = stringifyOptions;
+      //       this.$nextTick(() => this.updateSelected());
+      //     }
+      //   }
+      // }
     }
   };
 </script>

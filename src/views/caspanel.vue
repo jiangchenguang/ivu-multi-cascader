@@ -3,6 +3,7 @@
     <ul v-if="data && data.length" :class="[prefixCls + '-menu']">
       <Casitem
           v-for="item in data"
+          v-if="!item.selected"
           :key="getKey()"
           :prefix-cls="prefixCls"
           :data="item"
@@ -11,11 +12,11 @@
           @mouseenter.native.stop="handleHoverItem(item)"
       ></Casitem>
     </ul>
-    <Caspanel v-if="sublist && sublist.length"
-              :prefix-cls="prefixCls"
+    <Caspanel v-if="sublistShow"
               :data="sublist"
+              :pathDeep="pathDeep + 1"
+              :prefix-cls="prefixCls"
               :disabled="disabled"
-              :trigger="trigger"
               :onlyLeaf="onlyLeaf"
     ></Caspanel>
   </span>
@@ -42,8 +43,12 @@
         type: Boolean,
         default: false,
       },
+      // 当前panel的路径深度
+      pathDeep: {
+        type: Number,
+        required: true,
+      },
       disabled: Boolean,
-      trigger: String,
       prefixCls: String
     },
     data() {
@@ -53,7 +58,8 @@
         // 当panel级联层次太多，用于组装并向上抛消息
         result: [],
         // 子选项
-        sublist: []
+        sublist: [],
+        sublistShow: false,
       };
     },
     watch: {
@@ -70,8 +76,13 @@
       },
       // hover展示子选项
       handleHoverItem(item) {
-        if (!item.children || !item.children.length) return;  // #1922
-        this.sublist = item.children ? item.children : [];
+        this.dispatch('Cascader', 'on-hover', {
+          pathDeep: this.pathDeep,
+          item,
+        })
+
+        this.sublist = item.children && item.children.length ? item.children : [];
+        this.sublistShow = item.children && item.children.length;
       },
       // 用户选中选项
       handleTriggerItem(item, fromInit = false, fromUser = false) {
@@ -113,6 +124,6 @@
           }
         }
       });
-    }
+    },
   };
 </script>

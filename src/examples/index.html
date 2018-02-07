@@ -10,14 +10,26 @@
 </head>
 <body>
 <div id="app">
-  <Multi-cascader :options="cascadeOption"
-                  v-model="cascaderModel"
-                  filterable
-                  only-leaf
-                  multiple
-                  single-line-mode
-                  separator="-"
-  ></Multi-cascader>
+  <collapse>
+    <panel>
+      multi-cascader
+      <div slot="content">
+        <i-form>
+          <form-item>
+            <Multi-cascader :options="cascadeOption"
+                            v-model="cascaderModel"
+                            filterable
+                            only-leaf
+                            multiple
+                            single-line-mode
+                            separator="-"
+                            transfer
+            ></Multi-cascader>
+          </form-item>
+        </i-form>
+      </div>
+    </panel>
+  </collapse>
 </div>
 <script>
   new Vue({
@@ -74,13 +86,17 @@
                   icon: 'person',
                 },
                 {
-                  value: 'shizilin',
-                  label: '狮子林',
+                  value: 'zhejiang',
+                  label: '浙江',
                   icon: 'person',
                 }
               ]
             }
           ],
+        }, {
+          value: 'zhejiang',
+          label: '浙江',
+          icon: 'person',
         }
       ],
       cascaderModel: [

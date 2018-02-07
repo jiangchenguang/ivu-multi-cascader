@@ -8,16 +8,6 @@
 </template>
 
 <script>
-
-  const validIcon = {
-    0: {
-      clazz: 'ivu-icon-person',
-    },
-    1: {
-      clazz: 'ivu-icon-person-stalker',
-    }
-  }
-
   export default {
     name: 'Casitem',
     props: {
