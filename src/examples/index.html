@@ -14,10 +14,10 @@
     <panel>
       multi-cascader
       <div slot="content">
-        <i-form>
-          <form-item>
+        <i-form :model="model" :rules="validate">
+          <form-item prop="cascader">
             <Multi-cascader :options="cascadeOption"
-                            v-model="cascaderModel"
+                            v-model="model.cascader"
                             filterable
                             only-leaf
                             multiple
@@ -99,22 +99,32 @@
           icon: 'person',
         }
       ],
-      cascaderModel: [
-        [
-          {
-            value: 'jiangsu',
-            label: '江苏',
-          },
-          {
-            value: 'nanjing',
-            label: '南京'
-          },
-          {
-            value: 'fuzimiao',
-            label: '夫子庙'
-          }
-        ]
-      ],
+      model: {
+        cascader: [
+          [
+            {
+              value: 'jiangsu',
+              label: '江苏',
+            },
+            {
+              value: 'nanjing',
+              label: '南京'
+            },
+            {
+              value: 'fuzimiao',
+              label: '夫子庙'
+            }
+          ]
+        ],
+      },
+      validate: {
+        cascader: {
+          type: 'array',
+          required: true,
+          trigger: 'change',
+          message: 'Cannot be empty',
+        }
+      },
     },
     watch: {
       cascaderModel() {

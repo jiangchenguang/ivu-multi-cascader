@@ -312,7 +312,7 @@
 
             item.__label = label ? `${label}${this.separator}${item.label}` : item.label;
             item.__value = value ? value + item.value : item.value;
-            item.__path = path.concat([item]);
+            item.__path = path.concat([ item ]);
 
             // todo：如果父节点disabled，则不现实，但需要显示子节点项目（没有disable的话）
             if (item.children && item.children.length) {
@@ -403,6 +403,8 @@
         if (JSON.stringify(this.selected) === stringifyOldSelected) return;
 
         this.$emit('input', this.selected);
+        this.$emit('on-change', this.selected);
+        this.dispatch('FormItem', 'on-form-change', this.selected);
       },
       handleInput(event) {
         this.query = event.target.value;
@@ -700,8 +702,6 @@
       }
 
       this.$on('on-selected', item => {
-        console.log('hover path:', this.hoverPath);
-
         this.setSelected(this.hoverPath);
 
         if (this.filterable) {
