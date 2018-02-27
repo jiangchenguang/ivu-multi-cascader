@@ -486,7 +486,7 @@
         this.multiple ? this.setMultiSelected(duplicate) : this.setSingleSelected(duplicate);
 
         // 如果新选中节点的父节点的所有子节点都被选中，则合并，且向上递归。
-        if (!this.onlyLeaf) this.combine(duplicate);
+        if (!this.onlyLeaf) this.merge2Parent(duplicate);
 
         this.emitValue(oldVal);
       },
@@ -557,20 +557,32 @@
           return true;
         };
 
-        let parent = itemPath[ itemPath.length - 1 ];
-        if (!parent.children || !parent.children.length) return;// 叶子节点直接返回
+        let isLeaf = (itemPath) => {
+          // 取最后一个节点
+          let last = itemPath[ itemPath.length - 1 ];
+          return !last.children || !last.children.length;
+        };
+
+        // 叶子节点不存在子节点，直接返回。
+        if (isLeaf(itemPath)) return;
 
         // 必须从后向前删除
-        for (let index = this.selected.length - 1; index >= 0; index--) {
-          if (isChild(this.selected[ index ])) {
-            this.removeSelected({ index });
+        if (this.multiple) {
+          for (let index = this.selected.length - 1; index >= 0; index--) {
+            if (isChild(this.selected[ index ])) {
+              this.removeSelected({ index });
+            }
+          }
+        } else {
+          if (isChild(this.selected)) {
+            this.removeSelected({ index: 0 });
           }
         }
       },
       /**
        * 如果newItem的兄弟全部被选中，则合并成父节点
        */
-      combine(newItemPath) {
+      merge2Parent(newItemPath) {
         // 是否parent所有的子节点都选中了
         let childrenAllSelected = (parentPath) => {
           let currNode = null;
