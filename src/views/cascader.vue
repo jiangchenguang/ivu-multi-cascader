@@ -95,13 +95,14 @@
   import TransferDom from '@/directives/transfer-dom';
   import { dom, assist } from '@/utils';
   import Emitter from '@/mixins/emitter';
+  import Interface from '@/mixins/interface';
 
   const prefixCls = 'ivu-cascader';
   const selectPrefixCls = 'ivu-select';
 
   export default {
     name: 'Cascader',
-    mixins: [ Emitter ],
+    mixins: [ Emitter, Interface ],
     components: { Drop, Caspanel },
     directives: { clickoutside, TransferDom },
     props: {
@@ -454,8 +455,9 @@
        * 移除一个或全部选中项
        * @param index
        * @param all
+       * @param notifyOutside
        */
-      removeSelected({ index = -1, all = false }) {
+      removeSelected({ index = -1, all = false }, notifyOutside = true) {
         const oldSelected = JSON.stringify(this.selected);
 
         if (this.multiple && index !== -1) {
@@ -464,15 +466,15 @@
           this.selected.splice(0, this.selected.length);
         }
 
-        this.emitValue(oldSelected);
+        notifyOutside && this.emitValue(oldSelected);
       },
       /**
        * 添加单个选中项
        * @param itemPath
-       * @param ifInit
+       * @param notifyOutside
        */
       // todo: jcg 整合初始化和后期设置
-      setSelected(itemPath, ifInit = false) {
+      setSelected(itemPath, notifyOutside = true) {
         const oldVal = JSON.stringify(this.selected);
         /**
          * 不管是prop还是用户点击都要格式化
@@ -488,7 +490,7 @@
         // 如果新选中节点的父节点的所有子节点都被选中，则合并，且向上递归。
         if (!this.onlyLeaf) this.merge2Parent(duplicate);
 
-        this.emitValue(oldVal);
+        notifyOutside && this.emitValue(oldVal);
       },
       /**
        * userPath中的对象并非是options中对象（缺少属性或有多余的属性）
@@ -704,7 +706,7 @@
       if (this.multiple) {
         for (let item of this.value) {
           if (item.length > 0) {
-            this.setSelected(item, true);
+            this.setSelected(item, false);
           }
         }
       } else {
@@ -779,26 +781,25 @@
         this.selectScrollAuto();
         this.resetSelectTotalLen();
       },
-      // value() {
-      //   if (assist.isEqualArray(this.value, this.selected, false)) return;
-      //
-      //   this.selected.splice(0, this.selected.length);
-      //
-      //   if (this.multiple) {
-      //     for (let item of this.value) {
-      //       if (item.length > 0) {
-      //         this.setSelected(item);
-      //       }
-      //     }
-      //   } else {
-      //     if (this.value.length > 0) {
-      //       this.setSelected(this.value)
-      //     }
-      //   }
-      //
-      //   // todo: 如果是prop修改，则通知子组件（两种情况：prop和用户选择）
-      //   this.updateSelected(true);
-      // },
+      value() {
+        // 根据value判断是相同的数组，直接返回
+        if (assist.isEqualArray(this.selected, this.value)) return;
+
+        this.removeSelected({all: true}, false);
+
+        if (this.multiple) {
+          for (let item of this.value) {
+            if (item.length > 0) {
+              this.setSelected(item, false);
+            }
+          }
+        } else {
+          if (this.value.length > 0) {
+            this.setSelected(this.value, false)
+          }
+        }
+
+      },
       //     // todo: jcg 支持value options的动态响应
       // options: {
       //   deep: true,

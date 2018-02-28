@@ -374,14 +374,14 @@ export function isEqualArray(arrA, arrB, order = false) {
 
   if (!order) {
     for (let a of arrA) {
-      if (!arrB.includes(a)) {
+      if (!arrB.find(b => b.value === a.value)) {
         return false;
       }
     }
   }
   else {
     for (let index = 0; index < arrA.length; index++) {
-      if (arrA[ index ] !== arrB[ index ]) {
+      if (arrA.value !== arrB.value) {
         return false;
       }
     }

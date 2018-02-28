@@ -126,6 +126,11 @@
         }
       },
     },
+    created() {
+      setTimeout(()=> {
+        this.model.cascader.push([{value: 'beijing'}])
+      }, 1000)
+    },
     watch: {
       'model.cascader': function() {
         console.log('change:', this.model.cascader);
