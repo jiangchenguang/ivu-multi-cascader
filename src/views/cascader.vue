@@ -403,9 +403,9 @@
       emitValue(stringifyOldSelected) {
         if (JSON.stringify(this.selected) === stringifyOldSelected) return;
 
-        this.$emit('input', this.selected);
-        this.$emit('on-change', this.selected);
-        this.dispatch('FormItem', 'on-form-change', this.selected);
+        this.$emit('input', assist.deepCopy(this.selected));
+        this.$emit('on-change', assist.deepCopy(this.selected));
+        this.dispatch('FormItem', 'on-form-change', assist.deepCopy(this.selected));
       },
       handleInput(event) {
         this.query = event.target.value;
@@ -785,7 +785,7 @@
         // 根据value判断是相同的数组，直接返回
         if (assist.isEqualArray(this.selected, this.value)) return;
 
-        this.removeSelected({all: true}, false);
+        this.removeSelected({ all: true }, false);
 
         if (this.multiple) {
           for (let item of this.value) {

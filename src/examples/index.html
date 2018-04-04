@@ -19,7 +19,6 @@
             <Multi-cascader :options="cascadeOption"
                             v-model="model.cascader"
                             filterable
-                            only-leaf
                             multiple
                             single-line-mode
                             separator="-"
@@ -129,11 +128,11 @@
     created() {
       setTimeout(()=> {
         this.model.cascader.push([{value: 'beijing'}])
-      }, 1000)
+      }, 4000)
     },
     watch: {
       'model.cascader': function() {
-        console.log('change:', this.model.cascader);
+        console.log('[index.html]cascader:', JSON.parse(JSON.stringify(this.model.cascader)));
       }
     }
   })
