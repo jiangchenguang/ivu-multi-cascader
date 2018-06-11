@@ -169,6 +169,14 @@
         type: Boolean,
         default: false,
       },
+      /**
+       * 是否禁用当所有子节点都选中时，合并到父节点的功能。
+       * 默认情况下，会自动向上合并。但如果启用onlyLeaf的话，就不用合并了。
+       */
+      disableMerge2parent: {
+        type: Boolean,
+        default: false,
+      }
     },
     data() {
       return {
@@ -372,10 +380,9 @@
       toggleOpen() {
         if (this.disabled) return false;
 
-        if (this.visible) {
-          if (!this.filterable) this.handleClose();
-        } else {
+        if (!this.visible) {
           this.onFocus();
+        } else {
         }
       },
       onFocus() {
@@ -487,8 +494,11 @@
         let duplicate = assist.deepCopy(select);
         this.multiple ? this.setMultiSelected(duplicate) : this.setSingleSelected(duplicate);
 
-        // 如果新选中节点的父节点的所有子节点都被选中，则合并，且向上递归。
-        if (!this.onlyLeaf) this.merge2Parent(duplicate);
+        // 如果不是只能选子节点，也没有禁用向上合并时，尝试向上递归合并。
+        if (!this.onlyLeaf && !this.disableMerge2parent) this.merge2Parent(duplicate);
+
+        // 如果是单选模式，就自动关闭下拉框
+        if (!this.multiple) this.handleClose();
 
         notifyOutside && this.emitValue(oldVal);
       },
