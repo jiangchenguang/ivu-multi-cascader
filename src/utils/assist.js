@@ -2,8 +2,16 @@ import Vue from 'vue';
 
 const isServer = Vue.prototype.$isServer;
 
+export function isDef (v){
+  return v !== null && v !== undefined;
+}
+
+export function isUndef (v){
+  return v === null || v === undefined;
+}
+
 // 判断参数是否是其中之一
-export function oneOf(value, validList) {
+export function oneOf (value, validList){
   for (let i = 0; i < validList.length; i++) {
     if (value === validList[ i ]) {
       return true;
@@ -12,14 +20,14 @@ export function oneOf(value, validList) {
   return false;
 }
 
-export function camelcaseToHyphen(str) {
+export function camelcaseToHyphen (str){
   return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 }
 
 // For Modal scrollBar hidden
 let cached;
 
-export function getScrollBarSize(fresh) {
+export function getScrollBarSize (fresh){
   if (isServer) return 0;
   if (fresh || cached === undefined) {
     const inner = document.createElement('div');
@@ -63,14 +71,14 @@ export const MutationObserver = isServer ? false : window.MutationObserver || wi
 const SPECIAL_CHARS_REGEXP = /([\:\-\_]+(.))/g;
 const MOZ_HACK_REGEXP = /^moz([A-Z])/;
 
-function camelCase(name) {
-  return name.replace(SPECIAL_CHARS_REGEXP, function (_, separator, letter, offset) {
+function camelCase (name){
+  return name.replace(SPECIAL_CHARS_REGEXP, function (_, separator, letter, offset){
     return offset ? letter.toUpperCase() : letter;
   }).replace(MOZ_HACK_REGEXP, 'Moz$1');
 }
 
 // getStyle
-export function getStyle(element, styleName) {
+export function getStyle (element, styleName){
   if (!element || !styleName) return null;
   styleName = camelCase(styleName);
   if (styleName === 'float') {
@@ -85,20 +93,20 @@ export function getStyle(element, styleName) {
 }
 
 // firstUpperCase
-function firstUpperCase(str) {
+function firstUpperCase (str){
   return str.toString()[ 0 ].toUpperCase() + str.toString().slice(1);
 }
 
 export { firstUpperCase };
 
 // Warn
-export function warnProp(component, prop, correctType, wrongType) {
+export function warnProp (component, prop, correctType, wrongType){
   correctType = firstUpperCase(correctType);
   wrongType = firstUpperCase(wrongType);
   console.error(`[iView warn]: Invalid prop: type check failed for prop ${prop}. Expected ${correctType}, got ${wrongType}. (found in component: ${component})`);    // eslint-disable-line
 }
 
-function typeOf(obj) {
+export function typeOf (obj){
   const toString = Object.prototype.toString;
   const map = {
     '[object Boolean]': 'boolean',
@@ -116,7 +124,7 @@ function typeOf(obj) {
 }
 
 // deepCopy
-function deepCopy(data) {
+function deepCopy (data){
   const t = typeOf(data);
   let o;
 
@@ -143,13 +151,13 @@ function deepCopy(data) {
 export { deepCopy };
 
 // scrollTop animation
-export function scrollTop(el, from = 0, to, duration = 500) {
+export function scrollTop (el, from = 0, to, duration = 500){
   if (!window.requestAnimationFrame) {
     window.requestAnimationFrame = (
       window.webkitRequestAnimationFrame ||
       window.mozRequestAnimationFrame ||
       window.msRequestAnimationFrame ||
-      function (callback) {
+      function (callback){
         return window.setTimeout(callback, 1000 / 60);
       }
     );
@@ -157,7 +165,7 @@ export function scrollTop(el, from = 0, to, duration = 500) {
   const difference = Math.abs(from - to);
   const step = Math.ceil(difference / duration * 50);
 
-  function scroll(start, end, step) {
+  function scroll (start, end, step){
     if (start === end) return;
 
     let d = (start + step > end) ? end : start + step;
@@ -177,7 +185,7 @@ export function scrollTop(el, from = 0, to, duration = 500) {
 }
 
 // Find components upward
-function findComponentUpward(context, componentName, componentNames) {
+function findComponentUpward (context, componentName, componentNames){
   if (typeof componentName === 'string') {
     componentNames = [ componentName ];
   } else {
@@ -196,7 +204,7 @@ function findComponentUpward(context, componentName, componentNames) {
 export { findComponentUpward };
 
 // Find component downward
-export function findComponentDownward(context, componentName) {
+export function findComponentDownward (context, componentName){
   const childrens = context.$children;
   let children = null;
 
@@ -216,8 +224,8 @@ export function findComponentDownward(context, componentName) {
 }
 
 // Find components downward
-export function findComponentsDownward(context, componentName) {
-  return context.$children.reduce((components, child) => {
+export function findComponentsDownward (context, componentName){
+  return context.$children.reduce((components, child) =>{
     if (child.$options.name === componentName) components.push(child);
     const foundChilds = findComponentsDownward(child, componentName);
     return components.concat(foundChilds);
@@ -225,12 +233,12 @@ export function findComponentsDownward(context, componentName) {
 }
 
 /* istanbul ignore next */
-const trim = function (string) {
+const trim = function (string){
   return (string || '').replace(/^[\s\uFEFF]+|[\s\uFEFF]+$/g, '');
 };
 
 /* istanbul ignore next */
-export function hasClass(el, cls) {
+export function hasClass (el, cls){
   if (!el || !cls) return false;
   if (cls.indexOf(' ') !== -1) throw new Error('className should not contain space.');
   if (el.classList) {
@@ -241,7 +249,7 @@ export function hasClass(el, cls) {
 }
 
 /* istanbul ignore next */
-export function addClass(el, cls) {
+export function addClass (el, cls){
   if (!el) return;
   let curClass = el.className;
   const classes = (cls || '').split(' ');
@@ -264,7 +272,7 @@ export function addClass(el, cls) {
 }
 
 /* istanbul ignore next */
-export function removeClass(el, cls) {
+export function removeClass (el, cls){
   if (!el || !cls) return;
   const classes = cls.split(' ');
   let curClass = ' ' + el.className + ' ';
@@ -294,7 +302,7 @@ export function removeClass(el, cls) {
  * @param attr
  * @returns {Array}
  */
-export function treeRes2cascaderRes(treeOptions, val, attr = 'id') {
+export function treeRes2cascaderRes (treeOptions, val, attr = 'id'){
   let r = [];
   if (!val) return r;
 
@@ -302,7 +310,7 @@ export function treeRes2cascaderRes(treeOptions, val, attr = 'id') {
   walk(treeOptions);
   return r;
 
-  function walk(list) {
+  function walk (list){
     for (let item of list) {
       findOut(item);
 
@@ -311,9 +319,9 @@ export function treeRes2cascaderRes(treeOptions, val, attr = 'id') {
   }
 
   // 查找单个节点
-  function findOut(one) {
+  function findOut (one){
     // 1. 判断是不是自己
-    if (one[attr] === val) {
+    if (one[ attr ] === val) {
       r.unshift(one);
       find = true;
       return;
@@ -334,15 +342,15 @@ export function treeRes2cascaderRes(treeOptions, val, attr = 'id') {
  * @param val
  * @param attr
  */
-export function treeRemoveItem(treeData, val, attr = 'id') {
+export function treeRemoveItem (treeData, val, attr = 'id'){
   if (!val) return;
 
   let find = false;
   walk(treeData);
 
-  function walk(list) {
+  function walk (list){
     for (let index = 0; index < list.length; index++) {
-      if (findOut(list[index])) {
+      if (findOut(list[ index ])) {
         list.splice(index, 1);
         return;
       }
@@ -350,9 +358,9 @@ export function treeRemoveItem(treeData, val, attr = 'id') {
   }
 
   // 查找单个节点
-  function findOut(one) {
+  function findOut (one){
     // 1. 判断是不是自己
-    if (one[attr] === val) return true;
+    if (one[ attr ] === val) return true;
 
     // 2. 子节点列表
     if (one.children && one.children.length > 0) {
@@ -368,7 +376,7 @@ export function treeRemoveItem(treeData, val, attr = 'id') {
  * @param order
  * @returns {boolean}
  */
-export function isEqualArray(arrA, arrB, order = false) {
+export function isEqualArray (arrA, arrB, order = false){
   if (arrA.length !== arrB.length)
     return false;
 

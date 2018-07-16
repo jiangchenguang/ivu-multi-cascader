@@ -108,13 +108,13 @@
     props: {
       options: {
         type: Array,
-        default() {
+        default (){
           return [];
         }
       },
       value: {
         type: Array,
-        default() {
+        default (){
           return [];
         }
       },
@@ -127,7 +127,7 @@
         default: true
       },
       size: {
-        validator(value) {
+        validator (value){
           return assist.oneOf(value, [ 'small', 'large' ]);
         }
       },
@@ -137,7 +137,7 @@
       },
       renderFormat: {
         type: Function,
-        default(label) {
+        default (label){
           return label.join(`${this.separator}`);
         }
       },
@@ -165,20 +165,31 @@
         type: Boolean,
         default: false,
       },
+      /**
+       * 只能选中子节点（控制父节点能否被选中）
+       */
       onlyLeaf: {
         type: Boolean,
         default: false,
       },
       /**
-       * 是否禁用当所有子节点都选中时，合并到父节点的功能。
-       * 默认情况下，会自动向上合并。但如果启用onlyLeaf的话，就不用合并了。
+       * 是否禁用当所有子节点都选中时，自动合并成父节点的功能。
+       * 也就是默认情况下，会自动合并。
+       * 注：此值只有在onlyLeaf没有启用的情况下可用。
        */
       disableMerge2parent: {
         type: Boolean,
         default: false,
+      },
+      /**
+       * 当选项是单一路径时，是否自动选中
+       */
+      autoSelect: {
+        type: Boolean,
+        default: false,
       }
     },
-    data() {
+    data (){
       return {
         prefixCls: prefixCls,
         selectPrefixCls: selectPrefixCls,
@@ -208,7 +219,7 @@
       };
     },
     computed: {
-      classes() {
+      classes (){
         return [
           `${prefixCls}`,
           {
@@ -221,35 +232,35 @@
           }
         ];
       },
-      selectionCls() {
+      selectionCls (){
         return {
           [ `${selectPrefixCls}-selection` ]: this.multiple,
         }
       },
-      selectWrapperStyle() {
+      selectWrapperStyle (){
         return {
           position: 'relative',
           width: !this.singleLineMode ? '100%' : `${this.scroll.selectTotalLen + 500}px`,
         }
       },
       // 显示清空按钮
-      showCloseIcon() {
+      showCloseIcon (){
         return this.clearable
           && !this.disabled
           && this.selected
           && this.selected.length
       },
       // 【单选】选中项可视化
-      singleDisplayRender() {
+      singleDisplayRender (){
         if (this.multiple) return '';
 
         return this.renderFormat(this.selected.map(i => i.label));
       },
       // 【多选】选中项可视化
-      multiDisplayRender() {
+      multiDisplayRender (){
         if (!this.multiple) return [];
 
-        return this.selected.map(itemPath => {
+        return this.selected.map(itemPath =>{
           let labels = [];
           for (let path of itemPath) {
             labels.push(path.label);
@@ -260,9 +271,9 @@
       /**
        * 复制一份options，但根据selected为所有选中项做标记
        */
-      casPanelOpts() {
+      casPanelOpts (){
         // 哪个元素选中了就做一个标记
-        let makeSelected = (selectedPath, options) => {
+        let makeSelected = (selectedPath, options) =>{
           let currNode = options;
           let len = selectedPath.length;
           for (let [ index, item ] of selectedPath.entries()) {
@@ -274,7 +285,7 @@
           }
         };
         // 是否parent所有的子节点都选中了
-        let childrenAllSelected = (parentPath, options) => {
+        let childrenAllSelected = (parentPath, options) =>{
           let currNode = null;
           for (let item of parentPath) {
             currNode = !!currNode
@@ -291,7 +302,7 @@
         let optionsDup = assist.deepCopy(this.options);
         let selectedDup = assist.deepCopy(this.multiple ? this.selected : [ this.selected ]);
 
-        selectedDup.forEach(item => {
+        selectedDup.forEach(item =>{
           makeSelected(item, optionsDup);
 
           if (this.onlyLeaf) {
@@ -312,10 +323,10 @@
         return optionsDup;
       },
       // 过滤后的选项
-      querySelections() {
+      querySelections (){
         let selections = [];
 
-        let getSelections = (arr, label, value, path = []) => {
+        let getSelections = (arr, label, value, path = []) =>{
           for (let item of arr) {
             if (!!item.selected) continue;
 
@@ -349,17 +360,17 @@
 
         getSelections(assist.deepCopy(this.casPanelOpts));
 
-        selections = selections.filter(item => {
+        selections = selections.filter(item =>{
           return item.label.indexOf(this.query) > -1
             || item.value.indexOf(this.query) > -1;
         });
 
-        return selections.map(item => {
+        return selections.map(item =>{
           item.label = item.label.replace(new RegExp(this.query, 'g'), `<span>${this.query}</span>`);
           return item;
         });
       },
-      inputStyle() {
+      inputStyle (){
         let style = {};
 
         if (this.multiple) {
@@ -374,10 +385,10 @@
       },
     },
     methods: {
-      handleClose() {
+      handleClose (){
         this.visible = false;
       },
-      toggleOpen() {
+      toggleOpen (){
         if (this.disabled) return false;
 
         if (!this.visible) {
@@ -385,7 +396,7 @@
         } else {
         }
       },
-      onFocus() {
+      onFocus (){
         this.visible = true;
         if (!this.selected.length) {
           // this.broadcast('Caspanel', 'on-clear');  // todo: 选中项高亮
@@ -395,7 +406,7 @@
        * 通知panel高亮选中项
        * @param init
        */
-      updateSelected(init = false) {
+      updateSelected (init = false){
         // todo: 选中项高亮
         // if (init) {
         //   this.broadcast('Caspanel', 'on-find-selected', {
@@ -407,18 +418,18 @@
        * emit消息
        * @param stringifyOldSelected
        */
-      emitValue(stringifyOldSelected) {
+      emitValue (stringifyOldSelected){
         if (JSON.stringify(this.selected) === stringifyOldSelected) return;
 
         this.$emit('input', assist.deepCopy(this.selected));
         this.$emit('on-change', assist.deepCopy(this.selected));
         this.dispatch('FormItem', 'on-form-change', assist.deepCopy(this.selected));
       },
-      handleInput(event) {
+      handleInput (event){
         this.query = event.target.value;
       },
       // 选中一个过滤项
-      handleSelectItem(index) {
+      handleSelectItem (index){
         const item = this.querySelections[ index ];
         if (item.item.disabled) return false;
 
@@ -430,13 +441,13 @@
 
         this.handleClose();
       },
-      handleFocus() {
+      handleFocus (){
         this.$refs.input.focus();
       },
       /**
        * 清空选择
        */
-      clearSelect() {
+      clearSelect (){
         if (this.disabled) return;
 
         this.removeSelected({ all: true });
@@ -449,7 +460,7 @@
        * @param index
        * @returns {boolean}
        */
-      removeTag(index) {
+      removeTag (index){
         if (this.disabled) return false;
 
         this.removeSelected({ index });
@@ -464,7 +475,7 @@
        * @param all
        * @param notifyOutside
        */
-      removeSelected({ index = -1, all = false }, notifyOutside = true) {
+      removeSelected ({ index = -1, all = false }, notifyOutside = true){
         const oldSelected = JSON.stringify(this.selected);
 
         if (this.multiple && index !== -1) {
@@ -481,7 +492,7 @@
        * @param notifyOutside
        */
       // todo: jcg 整合初始化和后期设置
-      setSelected(itemPath, notifyOutside = true) {
+      setSelected (itemPath, notifyOutside = true){
         const oldVal = JSON.stringify(this.selected);
         /**
          * 不管是prop还是用户点击都要格式化
@@ -506,7 +517,7 @@
        * userPath中的对象并非是options中对象（缺少属性或有多余的属性）
        * 根据value取options中的对象组成的对象
        */
-      format2OptionObjPath(userPath) {
+      format2OptionObjPath (userPath){
         let selectedPath = [];
         let currNode = this.options;
         let find = true;
@@ -527,14 +538,14 @@
        * 【单选】设置选中项
        * @param selectedPath
        */
-      setSingleSelected(selectedPath) {
+      setSingleSelected (selectedPath){
         this.selected.splice(0, this.selected.length, ...selectedPath);
       },
       /**
        * 【多选】设置选中项
        * @param selectedPath
        */
-      setMultiSelected(selectedPath) {
+      setMultiSelected (selectedPath){
         if (!selectedPath.length) return;
         {
           // todo: jcg判断item是否已经被选择
@@ -561,15 +572,15 @@
        * selected中只要是item的后代节点，则移除
        * @param itemPath
        */
-      removeChildren(itemPath) {
-        let isChild = (selectItem) => {
+      removeChildren (itemPath){
+        let isChild = (selectItem) =>{
           for (let [ deep, item ] of itemPath.entries()) {
             if (item.value !== selectItem[ deep ].value) return false;
           }
           return true;
         };
 
-        let isLeaf = (itemPath) => {
+        let isLeaf = (itemPath) =>{
           // 取最后一个节点
           let last = itemPath[ itemPath.length - 1 ];
           return !last.children || !last.children.length;
@@ -594,9 +605,9 @@
       /**
        * 如果newItem的兄弟全部被选中，则合并成父节点
        */
-      merge2Parent(newItemPath) {
+      merge2Parent (newItemPath){
         // 是否parent所有的子节点都选中了
-        let childrenAllSelected = (parentPath) => {
+        let childrenAllSelected = (parentPath) =>{
           let currNode = null;
           for (let item of parentPath) {
             currNode = !!currNode
@@ -620,19 +631,41 @@
           this.setSelected(parentPath);
         }
       },
+
+      /**
+       * 判断可选项是否是单一路径，如果是的话，返回值路径，否则返回null
+       * 【单一路径】:可选项都只有1个，且子选项也是
+       */
+      isSinglePath (options){
+        let valuePath = [];
+        let opt = options;
+
+        while (assist.isDef(opt)) {
+          if (opt.length === 0) {
+            return valuePath;
+          } else if (opt.length === 1 && assist.isDef(opt[ 0 ][ "value" ])) {
+            valuePath.push({ value: opt[ 0 ][ "value" ] });
+            opt = opt[ 0 ][ "children" ];
+          } else {
+            return null;
+          }
+        }
+        return valuePath;
+      },
+
       /**
        * 设置输入框的长度
        */
-      resetInputState() {
+      resetInputState (){
         this.inputLength = this.$refs.input.value.length * 12 + 20;
       },
       /**
        * 设置选中项的总长度
        */
-      resetSelectTotalLen() {
+      resetSelectTotalLen (){
         if (!this.multiple || !this.singleLineMode) return;
 
-        this.$nextTick(() => {
+        this.$nextTick(() =>{
           this.scroll.selectTotalLen = 0;
 
           for (let item of this.$refs.selected) {
@@ -643,11 +676,11 @@
       /**
        * 根据选项长度自动确定一个值，使得最后一个选项可见
        */
-      selectScrollAuto() {
+      selectScrollAuto (){
         // [单选][多行模式]直接返回
         if (!this.multiple || !this.singleLineMode) return;
 
-        this.$nextTick(() => {
+        this.$nextTick(() =>{
           let wrapperWidth = dom.getContentWidth(this.$refs.wrapper);
           let len, last, lastRight, mr;
 
@@ -681,7 +714,7 @@
        * 选项滚动（向左或向右）
        * @param scrollLeft
        */
-      selectedScroll(scrollLeft = true) {
+      selectedScroll (scrollLeft = true){
         if (scrollLeft && this.scroll.firstPosIndex > 0) {
           this.scroll.firstPosIndex--;
         } else if (!scrollLeft && this.scroll.firstPosIndex < this.$refs.selected.length - 1) {
@@ -692,7 +725,7 @@
        * 处理按键
        * @param e
        */
-      handleKeyDown(e) {
+      handleKeyDown (e){
         if (this.visible) {
           switch (e.keyCode) {
             case 37:
@@ -709,23 +742,35 @@
         }
       },
     },
-    created() {
+    created (){
       this.stringifyOptions = JSON.stringify(this.options);
+
+      let ifNotice = false;
+      /**
+       * 启用自动选择，且用户没有设置默认值，尝试自动设置
+       */
+      if (this.autoSelect && this.value.length === 0) {
+        let valuePath = this.isSinglePath(this.options);
+        if (assist.isDef(valuePath) && valuePath.length > 0) {
+          this.multiple ? this.value.push(valuePath) : this.value.push(...valuePath);
+          ifNotice = true;
+        }
+      }
 
       // 将prop传入的选中项 在options中找到并保存（防止传入的选项少属性）
       if (this.multiple) {
         for (let item of this.value) {
           if (item.length > 0) {
-            this.setSelected(item, false);
+            this.setSelected(item, ifNotice);
           }
         }
       } else {
         if (this.value.length > 0) {
-          this.setSelected(this.value)
+          this.setSelected(this.value, ifNotice)
         }
       }
 
-      this.$on('on-selected', item => {
+      this.$on('on-selected', item =>{
         this.setSelected(this.hoverPath);
 
         if (this.filterable) {
@@ -733,21 +778,21 @@
         }
       });
 
-      this.$on('on-hover', para => {
+      this.$on('on-hover', para =>{
         let { pathDeep, item } = para;
         this.hoverPath.splice(pathDeep, this.hoverPath.length - pathDeep, item);
       })
     },
-    mounted() {
+    mounted (){
       // 初始化设置选中项
       this.updateSelected(true);
       document.addEventListener('keydown', this.handleKeyDown);
     },
-    beforeDestroy() {
+    beforeDestroy (){
       document.removeEventListener('keydown', this.handleKeyDown);
     },
     watch: {
-      visible() {
+      visible (){
         if (this.visible) {
           if (this.multiple) {
             this.$refs.input.focus();
@@ -772,10 +817,10 @@
           }
         }
       },
-      'scroll.scrollLeft': function () {
+      'scroll.scrollLeft': function (){
         this.$refs.wrapper.scrollLeft = this.scroll.scrollLeft;
       },
-      'scroll.firstPosIndex': function () {
+      'scroll.firstPosIndex': function (){
         if (this.scroll.firstPosIndex < 0
           || this.scroll.firstPosIndex > this.$refs.selected.length) return;
 
@@ -787,14 +832,13 @@
           this.scroll.scrollLeft = item.offsetLeft + item.offsetWidth + mr;
         }
       },
-      selected() {
+      selected (){
         this.selectScrollAuto();
         this.resetSelectTotalLen();
       },
-      value() {
+      value (){
         // 根据value判断是相同的数组，直接返回
         if (assist.isEqualArray(this.selected, this.value)) return;
-
         this.removeSelected({ all: true }, false);
 
         if (this.multiple) {
@@ -808,7 +852,6 @@
             this.setSelected(this.value, false)
           }
         }
-
       },
       //     // todo: jcg 支持value options的动态响应
       // options: {
