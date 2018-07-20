@@ -5,6 +5,16 @@ import { assist } from '../utils';
 export default {
   methods: {
     /**
+     * 通过简单的路径返回options中对象的路径
+     * @param attrName
+     * @param attrPathList
+     * @param attrPathString
+     * @return {*}
+     */
+    findPathByPath (attrName = 'value', attrPathList = [], attrPathString = ""){
+      return this.getItemPath(attrName, attrPathList, attrPathString);
+    },
+    /**
      * 根据 对象数组或字符串 获取options中完整的对象路径数组
      * 因为：
      * 一个选中项是使用选中路径上的item的数组
@@ -14,8 +24,8 @@ export default {
      * attrPathList 对象数组，每个对象至少有一个attrName属性
      * attrPathString 路径上的对象的attrName属性值 使用separator拼接的字符串
      */
-    getItemPath(attrName = 'value', attrPathList = [], attrPathString = "") {
-      let format2OptionObjPath = (attrPath) => {
+    getItemPath (attrName = 'value', attrPathList = [], attrPathString = ""){
+      let format2OptionObjPath = (attrPath) =>{
         let selectedPath = [];
         let currNode = this.options;
         let find = true;
@@ -33,16 +43,62 @@ export default {
         return find ? selectedPath : [];
       };
 
-
       if ((!attrPathList || !attrPathList.length) && !attrPathString) return [];
 
       let attrPath = !!attrPathList.length
         ? assist.deepCopy(attrPathList)
-        : attrPathString.split(this.separator).map(str => {
+        : attrPathString.split(this.separator).map(str =>{
           return { [ attrName ]: str.trim() }
         });
 
       return format2OptionObjPath(attrPath);
+    },
+
+    /**
+     * 通过值找到选项对象（可能多个）
+     * @param attrName    匹配哪个属性
+     * @param attrValue   匹配对应的值
+     */
+    findPathByValue (attrName = "", attrValue = ""){
+      /**
+       * 判断当前节点及其子节点是否满足要求
+       * @param currNode
+       * @param parentNodePath
+       * @param rltList
+       */
+      function findInCurrNode (currNode, parentNodePath, rltList){
+        // 路径更新为当前节点
+        let dump = assist.deepCopy(parentNodePath);
+        dump.push(currNode);
+
+        // 当前节点
+        if (currNode[ attrName ] === attrValue) {
+          rltList.push(dump);
+        }
+
+        // 子节点
+        if (assist.isDef(currNode.children) && currNode.children.length > 0) {
+          for (let child of currNode.children) {
+            findInCurrNode(child, dump, rltList);
+          }
+        }
+      }
+
+
+      let itemPathList = [];
+      if (assist.typeOf(attrName) !== "string" ||
+        assist.typeOf(attrValue) !== "string" ||
+        attrName.length === 0 ||
+        attrValue.length === 0) {
+        console.error("invalid args!", attrName, attrValue);
+        return itemPathList;
+      }
+
+      // 遍历整个选项
+      for (let treeNode of this.options) {
+        findInCurrNode(treeNode, [], itemPathList);
+      }
+      return itemPathList;
     }
   }
 }

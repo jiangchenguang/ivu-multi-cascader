@@ -16,7 +16,8 @@
       <div slot="content">
         <i-form :model="model" :rules="validate">
           <form-item prop="cascader">
-            <Multi-cascader :options="cascadeOption"
+            <Multi-cascader ref="multi"
+                            :options="cascadeOption"
                             v-model="model.cascader"
                             filterable
                             multiple
@@ -125,13 +126,14 @@
         }
       },
     },
-    created() {
-      setTimeout(()=> {
-        this.model.cascader.push([{value: 'beijing'}])
-      }, 4000)
+    created (){
+      // setTimeout(() =>{
+      //   this.model.cascader.push([ { value: 'beijing' } ])
+      // }, 4000)
+      console.log('path:', this.$refs.multi.getPathByValue("value", "fuzimiao"));
     },
     watch: {
-      'model.cascader': function() {
+      'model.cascader': function (){
         console.log('[index.html]cascader:', JSON.parse(JSON.stringify(this.model.cascader)));
       }
     }

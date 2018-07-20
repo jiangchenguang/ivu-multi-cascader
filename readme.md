@@ -146,3 +146,10 @@
 |label|选项的显示内容，也用于搜索过滤|String|-|
 |icon|图标（使用iview的icon的type值）|String|-|
 |children|子选项|Array|-|
+### 函数接口
+|函数名|说明|参数|返回值|
+| --- | --- | --- | --- |
+|findPathByPath|查找一个完整的选项对象路径。需要指定匹配属性名，并传入一个对象数组或一个字符串。|attrName: 指定属性名；attrPathList：对象数组，对象只有attrName这个属性即可；attrPathString：字符串，使用`separator`分割、`attrName`对应的值拼接的字符串|[]|
+|findPathByValue|查找所有符合条件的选项对象路径。需要指定匹配属性名，及对应的属性值。|attrName:指定属性名；attrValue:指定属性值。|[]|
+|getItemPath(同`findPathByPath`)旧接口||||
+
