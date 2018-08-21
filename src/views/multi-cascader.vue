@@ -58,15 +58,14 @@
           :data-transfer="transfer"
           v-transfer-dom>
         <div>
-          <Caspanel
-              ref="caspanel"
+          <OptionPanel
               v-show="!filterable || (filterable && query === '')"
               :data="casPanelOpts"
               :pathDeep="0"
               :prefix-cls="prefixCls"
               :disabled="disabled"
               :onlyLeaf="onlyLeaf"
-          ></Caspanel>
+          ></OptionPanel>
           <div :class="[prefixCls + '-dropdown']" v-show="filterable && query !== '' && querySelections.length">
             <ul :class="[selectPrefixCls + '-dropdown-list']">
               <li
@@ -90,7 +89,7 @@
 
 <script>
   import Drop from './dropdown.vue';
-  import Caspanel from './caspanel.vue';
+  import OptionPanel from './option-panel.vue';
   import clickoutside from '@/directives/clickoutside';
   import TransferDom from '@/directives/transfer-dom';
   import { dom, assist } from '@/utils';
@@ -101,9 +100,9 @@
   const selectPrefixCls = 'ivu-select';
 
   export default {
-    name: 'Cascader',
+    name: 'MultiCascader',
     mixins: [ Emitter, Interface ],
-    components: { Drop, Caspanel },
+    components: { Drop, OptionPanel },
     directives: { clickoutside, TransferDom },
     props: {
       options: {
@@ -399,7 +398,7 @@
       onFocus (){
         this.visible = true;
         if (!this.selected.length) {
-          // this.broadcast('Caspanel', 'on-clear');  // todo: 选中项高亮
+          // this.broadcast('OptionPanel', 'on-clear');  // todo: 选中项高亮
         }
       },
       /**
@@ -409,7 +408,7 @@
       updateSelected (init = false){
         // todo: 选中项高亮
         // if (init) {
-        //   this.broadcast('Caspanel', 'on-find-selected', {
+        //   this.broadcast('OptionPanel', 'on-find-selected', {
         //     value: this.selected
         //   });
         // }
@@ -453,7 +452,7 @@
         this.removeSelected({ all: true });
 
         this.handleClose();
-        // this.broadcast('Caspanel', 'on-clear');  // todo: 选中项高亮
+        // this.broadcast('OptionPanel', 'on-clear');  // todo: 选中项高亮
       },
       /**
        * 移除一个多选

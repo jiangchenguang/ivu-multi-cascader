@@ -9,7 +9,7 @@
 
 <script>
   export default {
-    name: 'Casitem',
+    name: 'OptionItem',
     props: {
       data: Object,
       prefixCls: String,

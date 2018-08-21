@@ -145,6 +145,7 @@
 |value|选项所对应的值|String|-|
 |label|选项的显示内容，也用于搜索过滤|String|-|
 |icon|图标（使用iview的icon的type值）|String|-|
+|group|用于选项分组，同一层级的选项如果拥有相同group则会统一显示|String|""|
 |children|子选项|Array|-|
 ### 函数接口
 |函数|说明|参数|返回值|
