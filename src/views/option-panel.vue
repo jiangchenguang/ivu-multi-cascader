@@ -102,7 +102,7 @@
             if (!!option.selected) {
               continue;
             }
-            if (isUndef(option.group) && option.group.trim().length > 0) {
+            if (isUndef(option.group) || !option.group.trim().length) {
               // 无group属性，直接放到结果中
               groupMergedOptions.push(option);
             } else {
