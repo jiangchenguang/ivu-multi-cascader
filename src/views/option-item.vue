@@ -1,6 +1,6 @@
 <template>
   <li :class="classes">
-    <Icon :type="data.icon" style="left: 2px;" />
+    <Icon :type="data.icon" :color="data.iconColor" style="left: 2px;" />
     {{ data.label }}
     <i v-if="showArrow" class="ivu-icon ivu-icon-ios-arrow-right"></i>
     <i v-if="showLoading" class="ivu-icon ivu-icon-load-c ivu-load-loop"></i>
