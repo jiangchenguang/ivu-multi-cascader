@@ -259,7 +259,7 @@
       multiDisplayRender (){
         if (!this.multiple) return [];
 
-        return this.selected.map(itemPath =>{
+        return this.selected.map(itemPath => {
           let labels = [];
           for (let path of itemPath) {
             labels.push(path.label);
@@ -272,7 +272,7 @@
        */
       casPanelOpts (){
         // 哪个元素选中了就做一个标记
-        let makeSelected = (selectedPath, options) =>{
+        let makeSelected = (selectedPath, options) => {
           let currNode = options;
           let len = selectedPath.length;
           for (let [ index, item ] of selectedPath.entries()) {
@@ -284,7 +284,7 @@
           }
         };
         // 是否parent所有的子节点都选中了
-        let childrenAllSelected = (parentPath, options) =>{
+        let childrenAllSelected = (parentPath, options) => {
           let currNode = null;
           for (let item of parentPath) {
             currNode = !!currNode
@@ -301,7 +301,7 @@
         let optionsDup = assist.deepCopy(this.options);
         let selectedDup = assist.deepCopy(this.multiple ? this.selected : [ this.selected ]);
 
-        selectedDup.forEach(item =>{
+        selectedDup.forEach(item => {
           makeSelected(item, optionsDup);
 
           if (this.onlyLeaf) {
@@ -325,7 +325,7 @@
       querySelections (){
         let selections = [];
 
-        let getSelections = (arr, label, value, path = []) =>{
+        let getSelections = (arr, label, value, path = []) => {
           for (let item of arr) {
             if (!!item.selected) continue;
 
@@ -359,12 +359,12 @@
 
         getSelections(assist.deepCopy(this.casPanelOpts));
 
-        selections = selections.filter(item =>{
+        selections = selections.filter(item => {
           return item.label.indexOf(this.query) > -1
             || item.value.indexOf(this.query) > -1;
         });
 
-        return selections.map(item =>{
+        return selections.map(item => {
           item.label = item.label.replace(new RegExp(this.query, 'g'), `<span>${this.query}</span>`);
           return item;
         });
@@ -572,14 +572,14 @@
        * @param itemPath
        */
       removeChildren (itemPath){
-        let isChild = (selectItem) =>{
+        let isChild = (selectItem) => {
           for (let [ deep, item ] of itemPath.entries()) {
             if (item.value !== selectItem[ deep ].value) return false;
           }
           return true;
         };
 
-        let isLeaf = (itemPath) =>{
+        let isLeaf = (itemPath) => {
           // 取最后一个节点
           let last = itemPath[ itemPath.length - 1 ];
           return !last.children || !last.children.length;
@@ -606,7 +606,7 @@
        */
       merge2Parent (newItemPath){
         // 是否parent所有的子节点都选中了
-        let childrenAllSelected = (parentPath) =>{
+        let childrenAllSelected = (parentPath) => {
           let currNode = null;
           for (let item of parentPath) {
             currNode = !!currNode
@@ -664,7 +664,7 @@
       resetSelectTotalLen (){
         if (!this.multiple || !this.singleLineMode) return;
 
-        this.$nextTick(() =>{
+        this.$nextTick(() => {
           this.scroll.selectTotalLen = 0;
 
           for (let item of this.$refs.selected) {
@@ -679,7 +679,7 @@
         // [单选][多行模式]直接返回
         if (!this.multiple || !this.singleLineMode) return;
 
-        this.$nextTick(() =>{
+        this.$nextTick(() => {
           let wrapperWidth = dom.getContentWidth(this.$refs.wrapper);
           let len, last, lastRight, mr;
 
@@ -769,7 +769,7 @@
         }
       }
 
-      this.$on('on-selected', item =>{
+      this.$on('on-selected', item => {
         this.setSelected(this.hoverPath);
 
         if (this.filterable) {
@@ -777,7 +777,7 @@
         }
       });
 
-      this.$on('on-hover', para =>{
+      this.$on('on-hover', para => {
         let { pathDeep, item } = para;
         this.hoverPath.splice(pathDeep, this.hoverPath.length - pathDeep, item);
       })
@@ -786,6 +786,9 @@
       // 初始化设置选中项
       this.updateSelected(true);
       document.addEventListener('keydown', this.handleKeyDown);
+      this.$nextTick(() => {
+        this.$emit("mounted");
+      })
     },
     beforeDestroy (){
       document.removeEventListener('keydown', this.handleKeyDown);
@@ -852,17 +855,38 @@
           }
         }
       },
-      //     // todo: jcg 支持value options的动态响应
-      // options: {
-      //   deep: true,
-      //   handler: function () {
-      //     const stringifyOptions = JSON.stringify(this.options);
-      //     if (stringifyOptions !== this.stringifyOptions) {
-      //       this.stringifyOptions = stringifyOptions;
-      //       this.$nextTick(() => this.updateSelected());
-      //     }
-      //   }
-      // }
+      options: {
+        handler: function () {
+          const stringifyOptions = JSON.stringify(this.options);
+          if (stringifyOptions !== this.stringifyOptions) {
+            this.stringifyOptions = stringifyOptions;
+            this.removeSelected({ all: true }, false);
+
+            /**
+             * 启用自动选择，且用户没有设置默认值，尝试自动设置
+             */
+            // if (this.autoSelect) {
+            //   let valuePath = this.isSinglePath(this.options);
+            //   if (assist.isDef(valuePath) && valuePath.length > 0) {
+            //     this.multiple ? this.value.push(valuePath) : this.value.push(...valuePath);
+            //   }
+            //
+            //   if (this.multiple) {
+            //     for (let item of this.value) {
+            //       if (item.length > 0) {
+            //         this.setSelected(item, true);
+            //       }
+            //     }
+            //   } else {
+            //     if (this.value.length > 0) {
+            //       this.setSelected(this.value, true)
+            //     }
+            //   }
+            // }
+          }
+        },
+        deep: true
+      }
     }
   };
 </script>

@@ -131,11 +131,46 @@
       //   this.model.cascader.push([ { value: 'beijing' } ])
       // }, 4000)
     },
+    mounted (){
+      let newOpt = [
+        {
+          value: 'beijing',
+          label: '北京',
+          icon: 'person-stalker',
+          children: [
+            {
+              value: 'gugong',
+              label: '故宫',
+              icon: 'person',
+            },
+            {
+              value: 'tiantan',
+              label: '天坛',
+              icon: 'person',
+            },
+            {
+              value: 'wangfujing',
+              label: '王府井',
+              icon: 'person',
+            }
+          ]
+        }
+      ]
+
+      setTimeout(() => {
+        this.cascadeOption.splice(
+          0,
+          this.cascadeOption.length,
+          ...newOpt
+        )
+      }, 3000)
+    },
     watch: {
       'model.cascader': function (){
         console.log('[index.html]cascader:', JSON.parse(JSON.stringify(this.model.cascader)));
       }
-    }
+    },
+    methods: {}
   })
 </script>
 </body>
