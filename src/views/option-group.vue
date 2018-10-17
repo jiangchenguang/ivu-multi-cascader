@@ -1,7 +1,7 @@
 <template>
   <li :class="[prefixCls + '-wrap']">
-    <div :class="[prefixCls + '-title']">{{ label }}</div>
-    <ul>
+    <div :class="[prefixCls + '-title']" style="padding-left: 3px">{{ label }}</div>
+    <ul style="padding-left: 7px">
       <li :class="[prefixCls]">
         <slot></slot>
       </li>

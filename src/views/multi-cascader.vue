@@ -857,6 +857,7 @@
       },
       options: {
         handler: function () {
+          return;
           const stringifyOptions = JSON.stringify(this.options);
           if (stringifyOptions !== this.stringifyOptions) {
             this.stringifyOptions = stringifyOptions;
