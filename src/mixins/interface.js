@@ -68,18 +68,18 @@ export default {
        */
       function findInCurrNode (currNode, parentNodePath, rltList){
         // 路径更新为当前节点
-        let dump = assist.deepCopy(parentNodePath);
-        dump.push(currNode);
+        let currentNodePath = parentNodePath.slice();
+        currentNodePath.push(currNode);
 
         // 当前节点
         if (currNode[ attrName ] === attrValue) {
-          rltList.push(dump);
+          rltList.push(currentNodePath);
         }
 
         // 子节点
         if (assist.isDef(currNode.children) && currNode.children.length > 0) {
           for (let child of currNode.children) {
-            findInCurrNode(child, dump, rltList);
+            findInCurrNode(child, currentNodePath, rltList);
           }
         }
       }
