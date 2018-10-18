@@ -20,7 +20,6 @@
                             :options="cascadeOption"
                             v-model="model.cascader"
                             filterable
-                            multiple
                             single-line-mode
                             separator="-"
                             transfer
@@ -31,90 +30,90 @@
     </panel>
   </collapse>
 </div>
+<script type="text/javascript" src="data.js"></script>
 <script>
   new Vue({
     el: '#app',
     data: {
       leaf: true,
-      cascadeOption: [
-        {
-          value: 'beijing',
-          label: '北京',
-          icon: 'person-stalker',
-          children: [
-            {
-              value: 'gugong',
-              label: '故宫',
-              icon: 'person',
-            },
-            {
-              value: 'tiantan',
-              label: '天坛',
-              icon: 'person',
-            },
-            {
-              value: 'wangfujing',
-              label: '王府井',
-              icon: 'person',
-            }
-          ]
-        }, {
-          value: 'jiangsu',
-          label: '江苏',
-          icon: 'person-stalker',
-          children: [
-            {
-              value: 'nanjing',
-              label: '南京',
-              icon: 'person-stalker',
-              children: [
-                {
-                  value: 'fuzimiao',
-                  label: '夫子庙',
-                  icon: 'person',
-                }
-              ]
-            },
-            {
-              value: 'suzhou',
-              label: '苏州',
-              icon: 'person-stalker',
-              children: [
-                {
-                  value: 'zhuozhengyuan',
-                  label: '拙政园',
-                  icon: 'person',
-                },
-                {
-                  value: 'zhejiang',
-                  label: '浙江',
-                  icon: 'person',
-                }
-              ]
-            }
-          ],
-        }, {
-          value: 'zhejiang',
-          label: '浙江',
-          icon: 'person',
-        }
-      ],
+      cascadeOption: tree,
+      // cascadeOption: [
+      //   {
+      //     value: 'beijing',
+      //     label: '北京',
+      //     icon: 'person-stalker',
+      //     children: [
+      //       {
+      //         value: 'gugong',
+      //         label: '故宫',
+      //         icon: 'person',
+      //       },
+      //       {
+      //         value: 'tiantan',
+      //         label: '天坛',
+      //         icon: 'person',
+      //       },
+      //       {
+      //         value: 'wangfujing',
+      //         label: '王府井',
+      //         icon: 'person',
+      //       }
+      //     ]
+      //   }, {
+      //     value: 'jiangsu',
+      //     label: '江苏',
+      //     icon: 'person-stalker',
+      //     children: [
+      //       {
+      //         value: 'nanjing',
+      //         label: '南京',
+      //         icon: 'person-stalker',
+      //         children: [
+      //           {
+      //             value: 'fuzimiao',
+      //             label: '夫子庙',
+      //             icon: 'person',
+      //           }
+      //         ]
+      //       },
+      //       {
+      //         value: 'suzhou',
+      //         label: '苏州',
+      //         icon: 'person-stalker',
+      //         children: [
+      //           {
+      //             value: 'zhuozhengyuan',
+      //             label: '拙政园',
+      //             icon: 'person',
+      //           },
+      //           {
+      //             value: 'zhejiang',
+      //             label: '浙江',
+      //             icon: 'person',
+      //           }
+      //         ]
+      //       }
+      //     ],
+      //   }, {
+      //     value: 'zhejiang',
+      //     label: '浙江',
+      //     icon: 'person',
+      //   }
+      // ],
       model: {
         cascader: [
-          [
             {
-              value: 'jiangsu',
-              label: '江苏',
+              value: 'G:dep220170628023',
+              label: '运营管理部',
             },
             {
-              value: 'nanjing',
-              label: '南京'
+              value: 'G:dep220170628045',
+              label: '运营支撑组'
             },
             {
-              value: 'fuzimiao',
-              label: '夫子庙'
+              value: 'U:wanglm',
+              label: '王黎明'
             }
-          ]
         ],
       },
       validate: {
@@ -127,6 +126,7 @@
       },
     },
     created (){
+      console.log("tree:", tree);
       // setTimeout(() =>{
       //   this.model.cascader.push([ { value: 'beijing' } ])
       // }, 4000)
@@ -157,13 +157,18 @@
         }
       ]
 
-      setTimeout(() => {
-        this.cascadeOption.splice(
-          0,
-          this.cascadeOption.length,
-          ...newOpt
-        )
-      }, 3000)
+      console.log("before find:", new Date());
+      console.log("find wanglm:", this.$refs.multi.findPathByValue("value", "U:wanglm"));
+      console.log("after find:", new Date());
+
+
+      // setTimeout(() => {
+      //   this.cascadeOption.splice(
+      //     0,
+      //     this.cascadeOption.length,
+      //     ...newOpt
+      //   )
+      // }, 3000)
     },
     watch: {
       'model.cascader': function (){

@@ -60,13 +60,13 @@
         <div>
           <OptionPanel
               v-show="!filterable || (filterable && query === '')"
-              :data="casPanelOpts"
+              :data="options"
               :pathDeep="0"
               :prefix-cls="prefixCls"
               :disabled="disabled"
               :onlyLeaf="onlyLeaf"
           ></OptionPanel>
-          <div :class="[prefixCls + '-dropdown']" v-show="filterable && query !== '' && querySelections.length">
+          <div :class="[prefixCls + '-dropdown']" v-if="filterable && query !== '' && querySelections.length">
             <ul :class="[selectPrefixCls + '-dropdown-list']">
               <li
                   :class="[
@@ -78,7 +78,7 @@
               ></li>
             </ul>
           </div>
-          <ul v-show="filterable && query !== '' && !querySelections.length" :class="[prefixCls + '-not-found-tip']">
+          <ul v-if="filterable && query !== '' && !querySelections.length" :class="[prefixCls + '-not-found-tip']">
             <li>{{ notFoundText }}</li>
           </ul>
         </div>
@@ -96,79 +96,79 @@
   import Emitter from '@/mixins/emitter';
   import Interface from '@/mixins/interface';
 
-  const prefixCls = 'ivu-cascader';
+  const prefixCls       = 'ivu-cascader';
   const selectPrefixCls = 'ivu-select';
 
   export default {
-    name: 'MultiCascader',
-    mixins: [ Emitter, Interface ],
+    name      : 'MultiCascader',
+    mixins    : [ Emitter, Interface ],
     components: { Drop, OptionPanel },
     directives: { clickoutside, TransferDom },
-    props: {
-      options: {
+    props     : {
+      options            : {
         type: Array,
         default (){
           return [];
         }
       },
-      value: {
+      value              : {
         type: Array,
         default (){
           return [];
         }
       },
-      disabled: {
-        type: Boolean,
+      disabled           : {
+        type   : Boolean,
         default: false
       },
-      clearable: {
-        type: Boolean,
+      clearable          : {
+        type   : Boolean,
         default: true
       },
-      size: {
+      size               : {
         validator (value){
           return assist.oneOf(value, [ 'small', 'large' ]);
         }
       },
-      separator: {
-        type: String,
+      separator          : {
+        type   : String,
         default: ' / ',
       },
-      renderFormat: {
+      renderFormat       : {
         type: Function,
         default (label){
           return label.join(`${this.separator}`);
         }
       },
-      filterable: {
-        type: Boolean,
+      filterable         : {
+        type   : Boolean,
         default: false
       },
-      placeholder: {
-        type: String,
+      placeholder        : {
+        type   : String,
         default: '请选择',
       },
-      notFoundText: {
-        type: String,
+      notFoundText       : {
+        type   : String,
         default: '无匹配内容',
       },
-      transfer: {
-        type: Boolean,
+      transfer           : {
+        type   : Boolean,
         default: false
       },
-      multiple: {
-        type: Boolean,
+      multiple           : {
+        type   : Boolean,
         default: false
       },
-      singleLineMode: {
-        type: Boolean,
+      singleLineMode     : {
+        type   : Boolean,
         default: false,
       },
       /**
        * 只能选中子节点（控制父节点能否被选中）
        */
-      onlyLeaf: {
-        type: Boolean,
+      onlyLeaf           : {
+        type   : Boolean,
         default: false,
       },
       /**
@@ -177,57 +177,57 @@
        * 注：此值只有在onlyLeaf没有启用的情况下可用。
        */
       disableMerge2parent: {
-        type: Boolean,
+        type   : Boolean,
         default: false,
       },
       /**
        * 当选项是单一路径时，是否自动选中
        */
-      autoSelect: {
-        type: Boolean,
+      autoSelect         : {
+        type   : Boolean,
         default: false,
       }
     },
     data (){
       return {
-        prefixCls: prefixCls,
-        selectPrefixCls: selectPrefixCls,
-        visible: false,
+        prefixCls       : prefixCls,
+        selectPrefixCls : selectPrefixCls,
+        visible         : false,
         /**
          * 选中项
          * 【单选】路径上item的集合
          * 【多选】每个元素都是对应单选的一个结果
          */
-        selected: [],
+        selected        : [],
         // 滚动相关
         // 如启用单行显示 且 选项宽度大于容器内容宽度，则会左移以显示最后一个选项，且是一个一个选项移动
-        scroll: {
+        scroll          : {
           // 选项总长度
           selectTotalLen: 0,
           // selected中第index个选项显示在第一个位置
-          firstPosIndex: 0,
+          firstPosIndex : 0,
           // 具体容器滚动的长度（根据scroll）
-          scrollLeft: 0,
+          scrollLeft    : 0,
         },
-        query: '',
+        query           : '',
         // 鼠标悬浮路径
-        hoverPath: [],
+        hoverPath       : [],
         // data的stringify
         stringifyOptions: '',
-        inputLength: 20,
+        inputLength     : 20,
       };
     },
-    computed: {
+    computed  : {
       classes (){
         return [
           `${prefixCls}`,
           {
-            [ `${prefixCls}-show-clear` ]: this.showCloseIcon,
+            [ `${prefixCls}-show-clear` ]       : this.showCloseIcon,
             [ `${prefixCls}-size-${this.size}` ]: !!this.size,
-            [ `${prefixCls}-visible` ]: this.visible,
-            [ `${prefixCls}-disabled` ]: this.disabled,
-            [ `${prefixCls}-not-found` ]: this.filterable && this.query !== '' && !this.querySelections.length,
-            [ `${selectPrefixCls}-multiple` ]: this.multiple,
+            [ `${prefixCls}-visible` ]          : this.visible,
+            [ `${prefixCls}-disabled` ]         : this.disabled,
+            [ `${prefixCls}-not-found` ]        : this.filterable && this.query !== '' && !this.querySelections.length,
+            [ `${selectPrefixCls}-multiple` ]   : this.multiple,
           }
         ];
       },
@@ -239,7 +239,7 @@
       selectWrapperStyle (){
         return {
           position: 'relative',
-          width: !this.singleLineMode ? '100%' : `${this.scroll.selectTotalLen + 500}px`,
+          width   : !this.singleLineMode ? '100%' : `${this.scroll.selectTotalLen + 500}px`,
         }
       },
       // 显示清空按钮
@@ -267,60 +267,6 @@
           return this.renderFormat(labels);
         })
       },
-      /**
-       * 复制一份options，但根据selected为所有选中项做标记
-       */
-      casPanelOpts (){
-        // 哪个元素选中了就做一个标记
-        let makeSelected = (selectedPath, options) => {
-          let currNode = options;
-          let len = selectedPath.length;
-          for (let [ index, item ] of selectedPath.entries()) {
-            currNode = currNode.find(i => i.value === item.value);
-            if (!currNode) return;
-
-            if (index < len - 1) currNode = currNode.children;
-            else currNode.selected = true;
-          }
-        };
-        // 是否parent所有的子节点都选中了
-        let childrenAllSelected = (parentPath, options) => {
-          let currNode = null;
-          for (let item of parentPath) {
-            currNode = !!currNode
-              ? currNode.children ? currNode.children : []
-              : options;
-            currNode = currNode.find(i => i.value === item.value);
-            if (!currNode) return false;
-          }
-
-          return currNode.children.every(i => !!i.selected);
-        };
-
-
-        let optionsDup = assist.deepCopy(this.options);
-        let selectedDup = assist.deepCopy(this.multiple ? this.selected : [ this.selected ]);
-
-        selectedDup.forEach(item => {
-          makeSelected(item, optionsDup);
-
-          if (this.onlyLeaf) {
-            // 【只能选择叶子节点】子节点都被选择的话，就移除父节点
-            let currNode = item.length - 1;
-            while (currNode > 0) {
-              let parentPath = item.slice(0, currNode);
-              if (childrenAllSelected(parentPath, optionsDup)) {
-                makeSelected(parentPath, optionsDup);
-                currNode--;
-              } else {
-                break;
-              }
-            }
-          }
-        })
-
-        return optionsDup;
-      },
       // 过滤后的选项
       querySelections (){
         let selections = [];
@@ -331,33 +277,33 @@
 
             item.__label = label ? `${label}${this.separator}${item.label}` : item.label;
             item.__value = value ? value + item.value : item.value;
-            item.__path = path.concat([ item ]);
+            item.__path  = path.concat([ item ]);
 
             // todo：如果父节点disabled，则不现实，但需要显示子节点项目（没有disable的话）
             if (item.children && item.children.length) {
               if (!this.onlyLeaf) {
                 selections.push({
-                  label: item.__label,
-                  value: item.__value,
-                  path: item.__path,
-                  item: item,
+                  label   : item.__label,
+                  value   : item.__value,
+                  path    : item.__path,
+                  item    : item,
                   disabled: !!item.disabled
                 });
               }
               getSelections(item.children, item.__label, item.__value, item.__path);
             } else {
               selections.push({
-                label: item.__label,
-                value: item.__value,
-                path: item.__path,
-                item: item,
+                label   : item.__label,
+                value   : item.__value,
+                path    : item.__path,
+                item    : item,
                 disabled: !!item.disabled
               });
             }
           }
         }
 
-        getSelections(assist.deepCopy(this.casPanelOpts));
+        getSelections(assist.deepCopy(this.options));
 
         selections = selections.filter(item => {
           return item.label.indexOf(this.query) > -1
@@ -383,7 +329,7 @@
         return style;
       },
     },
-    methods: {
+    methods   : {
       handleClose (){
         this.visible = false;
       },
@@ -433,7 +379,7 @@
         if (item.item.disabled) return false;
 
         // 清空输入
-        this.query = '';
+        this.query                    = '';
         this.$refs.input.currentValue = '';
 
         this.setSelected(item.path);
@@ -483,6 +429,7 @@
           this.selected.splice(0, this.selected.length);
         }
 
+        this.setSelectedFlagOnOptions();
         notifyOutside && this.emitValue(oldSelected);
       },
       /**
@@ -498,7 +445,7 @@
          * 如果是prop的情况，对象可能缺少属性
          * 如果是用户点击的情况，对象可能有多余的属性
          */
-        let select = this.format2OptionObjPath(itemPath);
+        let select   = this.format2OptionObjPath(itemPath);
         if (!select.length) return;
 
         let duplicate = assist.deepCopy(select);
@@ -506,6 +453,8 @@
 
         // 如果不是只能选子节点，也没有禁用向上合并时，尝试向上递归合并。
         if (!this.onlyLeaf && !this.disableMerge2parent) this.merge2Parent(duplicate);
+
+        this.setSelectedFlagOnOptions();
 
         // 如果是单选模式，就自动关闭下拉框
         if (!this.multiple) this.handleClose();
@@ -518,8 +467,8 @@
        */
       format2OptionObjPath (userPath){
         let selectedPath = [];
-        let currNode = this.options;
-        let find = true;
+        let currNode     = this.options;
+        let find         = true;
         for (let item of userPath) {
           currNode = currNode.find(i => i.value === item.value);
           if (currNode) {
@@ -611,7 +560,7 @@
           for (let item of parentPath) {
             currNode = !!currNode
               ? currNode.children ? currNode.children : []
-              : this.casPanelOpts;
+              : this.options;
             currNode = currNode.find(i => i.value === item.value);
             if (!currNode) return false;
           }
@@ -632,12 +581,81 @@
       },
 
       /**
+       * 将options上的selected置到false
+       */
+      setAllOptionUnSelected (init = false){
+        let makeUnSelected = (options) => {
+          for (let option of options) {
+            init
+              ? this.$set(option, "selected", false)
+              : option.selected = false;
+            if (option.children && option.children.length > 0) {
+              makeUnSelected(option.children);
+            }
+          }
+        }
+
+        makeUnSelected(this.options);
+      },
+      /**
+       * 根据选中项在options打上标记
+       */
+      setSelectedFlagOnOptions (){
+        // 哪个元素选中了就做一个标记
+        let makeSelected        = (selectedPath, options) => {
+          let currNode = options;
+          let len      = selectedPath.length;
+          for (let [ index, item ] of selectedPath.entries()) {
+            currNode = currNode.find(i => i.value === item.value);
+            if (!currNode) return;
+
+            if (index < len - 1) currNode = currNode.children;
+            else {
+              currNode.selected = true;
+            }
+          }
+        };
+        // 是否parent所有的子节点都选中了
+        let childrenAllSelected = (parentPath, options) => {
+          let currNode = null;
+          for (let item of parentPath) {
+            currNode = !!currNode
+              ? currNode.children ? currNode.children : []
+              : options;
+            currNode = currNode.find(i => i.value === item.value);
+            if (!currNode) return false;
+          }
+
+          return currNode.children.every(i => !!i.selected);
+        };
+
+        let selectedList = this.multiple ? this.selected : [ this.selected ];
+        this.setAllOptionUnSelected();
+        for (let select of selectedList) {
+          makeSelected(select, this.options);
+
+          if (this.onlyLeaf) {
+            // 【只能选择叶子节点】子节点都被选择的话，就移除父节点
+            let currNode = select.length - 1;
+            while (currNode > 0) {
+              let parentPath = select.slice(0, currNode);
+              if (childrenAllSelected(parentPath, this.options)) {
+                makeSelected(parentPath, this.options);
+                currNode--;
+              } else {
+                break;
+              }
+            }
+          }
+        }
+      },
+      /**
        * 判断可选项是否是单一路径，如果是的话，返回值路径，否则返回null
        * 【单一路径】:可选项都只有1个，且子选项也是
        */
       isSinglePath (options){
         let valuePath = [];
-        let opt = options;
+        let opt       = options;
 
         while (assist.isDef(opt)) {
           if (opt.length === 0) {
@@ -741,8 +759,11 @@
         }
       },
     },
+    beforeCreate (){
+    },
     created (){
       this.stringifyOptions = JSON.stringify(this.options);
+      this.setAllOptionUnSelected(true);
 
       let ifNotice = false;
       /**
@@ -793,7 +814,7 @@
     beforeDestroy (){
       document.removeEventListener('keydown', this.handleKeyDown);
     },
-    watch: {
+    watch     : {
       visible (){
         if (this.visible) {
           if (this.multiple) {
@@ -810,7 +831,7 @@
           if (this.multiple) this.$refs.wrapper.scrollLeft = 0;
 
           if (this.filterable) {
-            this.query = '';
+            this.query                    = '';
             this.$refs.input.currentValue = '';
           }
 
@@ -819,7 +840,7 @@
           }
         }
       },
-      'scroll.scrollLeft': function (){
+      'scroll.scrollLeft'   : function (){
         this.$refs.wrapper.scrollLeft = this.scroll.scrollLeft;
       },
       'scroll.firstPosIndex': function (){
@@ -829,8 +850,8 @@
         if (this.scroll.firstPosIndex === 0) {
           this.scroll.scrollLeft = 0;
         } else {
-          let item = this.$refs.selected[ this.scroll.firstPosIndex - 1 ];
-          let mr = parseInt(dom.getStyle(item, 'margin-right'));
+          let item               = this.$refs.selected[ this.scroll.firstPosIndex - 1 ];
+          let mr                 = parseInt(dom.getStyle(item, 'margin-right'));
           this.scroll.scrollLeft = item.offsetLeft + item.offsetWidth + mr;
         }
       },
@@ -855,8 +876,8 @@
           }
         }
       },
-      options: {
-        handler: function () {
+      options               : {
+        handler: function (){
           return;
           const stringifyOptions = JSON.stringify(this.options);
           if (stringifyOptions !== this.stringifyOptions) {
@@ -886,7 +907,7 @@
             // }
           }
         },
-        deep: true
+        deep   : true
       }
     }
   };
