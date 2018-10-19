@@ -923,4 +923,11 @@
     width: 22px;
     background: linear-gradient(to right, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 1));
   }
+
+  .ivu-cascader-menu {
+    height: 220px;
+  }
+  .ivu-select-dropdown {
+    max-height: 220px;
+  }
 </style>
