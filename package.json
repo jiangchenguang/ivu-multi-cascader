@@ -2,7 +2,7 @@
   "name": "multi-cascader",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/multi-cascader.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack-dev-server --open-page dist/index.html --inline --config build/webpack.dev.config.js",
