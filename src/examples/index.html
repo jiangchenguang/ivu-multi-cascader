@@ -19,6 +19,7 @@
             <Multi-cascader ref="multi"
                             :options="cascadeOption"
                             v-model="model.cascader"
+                            multiple
                             filterable
                             single-line-mode
                             separator="-"
@@ -33,63 +34,63 @@
 <script type="text/javascript" src="data.js"></script>
 <script>
   new Vue({
-    el: '#app',
-    data: {
-      leaf: true,
+    el     : '#app',
+    data   : {
+      leaf         : true,
       cascadeOption: tree,
       // cascadeOption: [
       //   {
-      //     value: 'beijing',
-      //     label: '北京',
-      //     icon: 'person-stalker',
+      //     value   : 'beijing',
+      //     label   : '北京',
+      //     icon    : 'person-stalker',
       //     children: [
       //       {
       //         value: 'gugong',
       //         label: '故宫',
-      //         icon: 'person',
+      //         icon : 'person',
       //       },
       //       {
       //         value: 'tiantan',
       //         label: '天坛',
-      //         icon: 'person',
+      //         icon : 'person',
       //       },
       //       {
       //         value: 'wangfujing',
       //         label: '王府井',
-      //         icon: 'person',
+      //         icon : 'person',
       //       }
       //     ]
       //   }, {
-      //     value: 'jiangsu',
-      //     label: '江苏',
-      //     icon: 'person-stalker',
+      //     value   : 'jiangsu',
+      //     label   : '江苏',
+      //     icon    : 'person-stalker',
       //     children: [
       //       {
-      //         value: 'nanjing',
-      //         label: '南京',
-      //         icon: 'person-stalker',
+      //         value   : 'nanjing',
+      //         label   : '南京',
+      //         icon    : 'person-stalker',
       //         children: [
       //           {
       //             value: 'fuzimiao',
       //             label: '夫子庙',
-      //             icon: 'person',
+      //             icon : 'person',
       //           }
       //         ]
       //       },
       //       {
-      //         value: 'suzhou',
-      //         label: '苏州',
-      //         icon: 'person-stalker',
+      //         value   : 'suzhou',
+      //         label   : '苏州',
+      //         icon    : 'person-stalker',
       //         children: [
       //           {
       //             value: 'zhuozhengyuan',
       //             label: '拙政园',
-      //             icon: 'person',
+      //             icon : 'person',
       //           },
       //           {
       //             value: 'zhejiang',
       //             label: '浙江',
-      //             icon: 'person',
+      //             icon : 'person',
       //           }
       //         ]
       //       }
@@ -97,80 +98,83 @@
       //   }, {
       //     value: 'zhejiang',
       //     label: '浙江',
-      //     icon: 'person',
+      //     icon : 'person',
       //   }
       // ],
-      model: {
+      model        : {
         cascader: [
-            {
-              value: 'G:dep220170628023',
-              label: '运营管理部',
-            },
-            {
-              value: 'G:dep220170628045',
-              label: '运营支撑组'
-            },
-            {
-              value: 'U:wanglm',
-              label: '王黎明'
-            }
+          // [
+          //   {
+          //     value: 'G:dep220170628023',
+          //     label: '运营管理部',
+          //   },
+          //   {
+          //     value: 'G:dep220170628045',
+          //     label: '运营支撑组'
+          //   },
+          //   {
+          //     value: 'U:wanglm',
+          //     label: '王黎明'
+          //   }
+          // ]
         ],
       },
-      validate: {
+      validate     : {
         cascader: {
-          type: 'array',
+          type    : 'array',
           required: true,
-          trigger: 'change',
-          message: 'Cannot be empty',
+          trigger : 'change',
+          message : 'Cannot be empty',
         }
       },
     },
     created (){
-      console.log("tree:", tree);
-      // setTimeout(() =>{
-      //   this.model.cascader.push([ { value: 'beijing' } ])
-      // }, 4000)
+      // console.log("tree:", tree);
+      // setTimeout(() => {
+      //   let find = this.$refs.multi.findPathByValue("value", "U:wanglm");
+      //   this.model.cascader.push(find[ 0 ]);
+      // }, 3000)
     },
     mounted (){
       let newOpt = [
         {
-          value: 'beijing',
-          label: '北京',
-          icon: 'person-stalker',
+          value   : 'beijing',
+          label   : '北京',
+          icon    : 'person-stalker',
           children: [
             {
               value: 'gugong',
               label: '故宫',
-              icon: 'person',
+              icon : 'person',
             },
             {
               value: 'tiantan',
               label: '天坛',
-              icon: 'person',
+              icon : 'person',
             },
             {
               value: 'wangfujing',
               label: '王府井',
-              icon: 'person',
+              icon : 'person',
             }
           ]
         }
       ]
 
-      console.log("before find:", new Date());
-      console.log("find wanglm:", this.$refs.multi.findPathByValue("value", "U:wanglm"));
-      console.log("after find:", new Date());
-
-
-      // setTimeout(() => {
-      //   this.cascadeOption.splice(
-      //     0,
-      //     this.cascadeOption.length,
-      //     ...newOpt
-      //   )
-      // }, 3000)
+      setTimeout(() => {
+        // this.cascadeOption = newOpt;
+        // this.cascadeOption.splice(
+        //   0,
+        //   this.cascadeOption.length,
+        //   ...newOpt
+        // )
+        let find = this.$refs.multi.findPathByValue("value", "U:wanglm");
+        this.model.cascader.push(find[ 0 ]);
+        find = this.$refs.multi.findPathByValue("value", "G:dep220170628023");
+        this.model.cascader.push(find[ 0 ]);
+      }, 5000)
     },
-    watch: {
+    watch  : {
       'model.cascader': function (){
         console.log('[index.html]cascader:', JSON.parse(JSON.stringify(this.model.cascader)));
       }

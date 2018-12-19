@@ -199,6 +199,8 @@
          * 【多选】每个元素都是对应单选的一个结果
          */
         selected        : [],
+        // 是否$emit的总开关，后续再和notifyOutside合并
+        shouldEmit      : true,
         // 滚动相关
         // 如启用单行显示 且 选项宽度大于容器内容宽度，则会左移以显示最后一个选项，且是一个一个选项移动
         scroll          : {
@@ -364,12 +366,17 @@
        * @param stringifyOldSelected
        */
       emitValue (stringifyOldSelected){
-        if (JSON.stringify(this.selected) === stringifyOldSelected) return;
+        if (!this.shouldEmit || JSON.stringify(this.selected) === stringifyOldSelected) return;
 
+        this.doEmitValue();
+      },
+
+      doEmitValue (){
         this.$emit('input', assist.deepCopy(this.selected));
         this.$emit('on-change', assist.deepCopy(this.selected));
         this.dispatch('FormItem', 'on-form-change', assist.deepCopy(this.selected));
       },
+
       handleInput (event){
         this.query = event.target.value;
       },
@@ -447,6 +454,9 @@
          */
         let select   = this.format2OptionObjPath(itemPath);
         if (!select.length) return;
+        if (this.hasSelectedOrIsSelectedChildNode(select)) {
+          return;
+        }
 
         let duplicate = assist.deepCopy(select);
         this.multiple ? this.setMultiSelected(duplicate) : this.setSingleSelected(duplicate);
@@ -550,6 +560,34 @@
           }
         }
       },
+
+      /**
+       * 是否已经选中，或是选中项的子孙节点
+       */
+      hasSelectedOrIsSelectedChildNode (optionPath){
+        if (this.multiple) {
+          for (let selected of this.selected) {
+            if (assist.isEqualArray(optionPath, selected)
+              || this.isChildNode(optionPath, selected)
+            ) {
+              return true;
+            }
+          }
+          return false;
+        } else {
+          return assist.isEqualArray(optionPath, this.selected)
+            || this.isChildNode(optionPath, this.selected);
+        }
+      },
+
+      isChildNode (childrenPath, parentPath){
+        if (childrenPath.length <= parentPath.length) return false;
+        for (let deep = 0; deep < parentPath.length; deep++) {
+          if (childrenPath[ deep ].value !== parentPath[ deep ].value) return false;
+        }
+        return true;
+      },
+
       /**
        * 如果newItem的兄弟全部被选中，则合并成父节点
        */
@@ -683,11 +721,14 @@
         if (!this.multiple || !this.singleLineMode) return;
 
         this.$nextTick(() => {
-          this.scroll.selectTotalLen = 0;
-
-          for (let item of this.$refs.selected) {
-            this.scroll.selectTotalLen += dom.getTotalWidth(item);
+          if (!this.$refs.selected) {
+            this.scroll.selectTotalLen = 0;
+          } else {
+            for (let item of this.$refs.selected) {
+              this.scroll.selectTotalLen += dom.getTotalWidth(item);
+            }
           }
+
         })
       },
       /**
@@ -758,6 +799,23 @@
           }
         }
       },
+
+      /**
+       * 判断两个选项是否一样，只判断value属性
+       */
+      isSameOptions (optA, optB){
+        if (!assist.isEqualArray(optA, optB)) {
+          return false;
+        }
+
+        let childrenA = optA.children || [];
+        let childrenB = optB.children || [];
+        if (!childrenA.length && !childrenB.length) {
+          return true;
+        }
+
+        return this.isSameOptions(childrenA, childrenB);
+      }
     },
     beforeCreate (){
     },
@@ -862,8 +920,9 @@
       value (){
         // 根据value判断是相同的数组，直接返回
         if (assist.isEqualArray(this.selected, this.value)) return;
-        this.removeSelected({ all: true }, false);
 
+        this.shouldEmit = false;
+        this.removeSelected({ all: true }, false);
         if (this.multiple) {
           for (let item of this.value) {
             if (item.length > 0) {
@@ -875,14 +934,26 @@
             this.setSelected(this.value, false)
           }
         }
+        this.shouldEmit = true;
+        this.doEmitValue();
       },
       options               : {
         handler: function (){
+          let old = JSON.parse(this.stringifyOptions);
+          if (!this.isSameOptions(this.options, old)) {
+            this.stringifyOptions = JSON.stringify(this.options);
+            // this.removeSelected({ all: true }, false);
+            this.setAllOptionUnSelected(true);
+          }
           return;
+
+
           const stringifyOptions = JSON.stringify(this.options);
           if (stringifyOptions !== this.stringifyOptions) {
             this.stringifyOptions = stringifyOptions;
             this.removeSelected({ all: true }, false);
+            this.$nextTick(function (){
+            })
 
             /**
              * 启用自动选择，且用户没有设置默认值，尝试自动设置
@@ -927,6 +998,7 @@
   .ivu-cascader-menu {
     height: 220px;
   }
+
   .ivu-select-dropdown {
     max-height: 220px;
   }
