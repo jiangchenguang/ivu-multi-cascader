@@ -19,7 +19,6 @@
             <Multi-cascader ref="multi"
                             :options="cascadeOption"
                             v-model="model.cascader"
-                            multiple
                             filterable
                             single-line-mode
                             separator="-"
@@ -168,10 +167,10 @@
         //   this.cascadeOption.length,
         //   ...newOpt
         // )
-        let find = this.$refs.multi.findPathByValue("value", "U:wanglm");
-        this.model.cascader.push(find[ 0 ]);
-        find = this.$refs.multi.findPathByValue("value", "G:dep220170628023");
-        this.model.cascader.push(find[ 0 ]);
+        // let find = this.$refs.multi.findPathByValue("value", "U:wanglm");
+        // this.model.cascader.push(find[ 0 ]);
+        // find = this.$refs.multi.findPathByValue("value", "G:dep220170628023");
+        // this.model.cascader.push(find[ 0 ]);
       }, 5000)
     },
     watch  : {

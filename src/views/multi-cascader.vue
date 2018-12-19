@@ -581,7 +581,7 @@
       },
 
       isChildNode (childrenPath, parentPath){
-        if (childrenPath.length <= parentPath.length) return false;
+        if (!parentPath.length || childrenPath.length <= parentPath.length) return false;
         for (let deep = 0; deep < parentPath.length; deep++) {
           if (childrenPath[ deep ].value !== parentPath[ deep ].value) return false;
         }
