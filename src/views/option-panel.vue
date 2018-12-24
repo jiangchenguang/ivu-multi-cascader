@@ -1,6 +1,13 @@
 <template>
   <span>
     <ul v-if="groupMergedOptions" :class="[prefixCls + '-menu']">
+      <div v-if="allSelectable && multiple && !onlyLeaf"
+              @click.stop="onClickSelectAll"
+              shape="circle"
+              size="small"
+              type="info"
+              class="all-select-btn"
+      >全选</div>
       <template v-for="item in groupMergedOptions">
         <template v-if="!!item.isGroup">
           <option-group :label="item.label">
@@ -33,7 +40,9 @@
                  :pathDeep="pathDeep + 1"
                  :prefix-cls="prefixCls"
                  :disabled="disabled"
+                 :multiple="multiple"
                  :onlyLeaf="onlyLeaf"
+                 :all-selectable="allSelectable"
     ></OptionPanel>
   </span>
 </template>
@@ -51,49 +60,57 @@
   let key = 1;
 
   export default {
-    name: 'OptionPanel',
-    mixins: [ Emitter ],
+    name      : 'OptionPanel',
+    mixins    : [ Emitter ],
     components: { OptionItem, OptionGroup },
-    props: {
+    props     : {
       /**
        * 选项列表
        */
-      data: {
+      data         : {
         type: Array,
         default (){
           return [];
         }
       },
-      onlyLeaf: {
-        type: Boolean,
+      allSelectable: {
+        type   : Boolean,
+        default: false
+      },
+      multiple     : {
+        type   : Boolean,
+        default: false
+      },
+      onlyLeaf     : {
+        type   : Boolean,
         default: false,
       },
       // 当前panel的路径深度
-      pathDeep: {
-        type: Number,
+      pathDeep     : {
+        type    : Number,
         required: true,
       },
-      disabled: Boolean,
-      prefixCls: String
+      disabled     : Boolean,
+      prefixCls    : String
     },
     data (){
       return {
         // 临时保存当前选中项
-        tmpItem: {},
+        tmpItem    : {},
         // 当panel级联层次太多，用于组装并向上抛消息
-        result: [],
+        result     : [],
         // 子选项
-        sublist: [],
+        sublist    : [],
         sublistShow: false,
       };
     },
-    computed: {
+    computed  : {
       /**
        * 合并相同分组后的选项
        * @return {Array}
        */
       groupMergedOptions (){
-        let groupMap = new Map();
+        let groupMap           = new Map();
         let groupMergedOptions = [];
 
         {
@@ -122,8 +139,8 @@
           let groupOptions = [];
           for (let [ key, optionList ] of groupMap.entries()) {
             groupOptions.push({
-              isGroup: true,
-              label: key,
+              isGroup   : true,
+              label     : key,
               optionList: optionList
             })
           }
@@ -133,12 +150,27 @@
         return groupMergedOptions;
       }
     },
-    watch: {
+    watch     : {
       data (){
         this.sublist = [];
-      }
+      },
     },
-    methods: {
+    methods   : {
+      /**
+       * 点击全选
+       */
+      onClickSelectAll (){
+        for (let item of this.groupMergedOptions) {
+          if (item.isGroup) {
+            for (let option of item.optionList) {
+              this.handleSelectAll(option);
+            }
+          } else {
+            this.handleSelectAll(item);
+          }
+        }
+      },
+
       // 点击表示选中一个选项
       handleClickItem (item){
         if (this.onlyLeaf && item.children && item.children.length > 0) return;
@@ -152,14 +184,26 @@
           item,
         })
 
-        this.sublist = item.children && item.children.length ? item.children : [];
+        this.sublist     = item.children && item.children.length ? item.children : [];
         this.sublistShow = item.children && item.children.length;
       },
       // 用户选中选项
       handleTriggerItem (item, fromInit = false, fromUser = false){
         if (item.disabled) return;
 
-        this.dispatch('MultiCascader', 'on-selected', item);
+        this.dispatch('MultiCascader', 'on-selected', {
+          type: 1,
+          item
+        });
+      },
+      handleSelectAll (item){
+        if (item.disabled) return;
+
+        this.dispatch('MultiCascader', 'on-selected', {
+          type    : 2,
+          item,
+          pathDeep: this.pathDeep
+        });
       },
       getKey (){
         return key++;
@@ -198,3 +242,19 @@
     },
   };
 </script>
+
+<style>
+  .all-select-btn {
+    margin: 0 4px 4px;
+    height: 18px;
+    width: calc(100% - 8px);
+    background-color: #ccc;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+  }
+  .all-select-btn:hover {
+    background-color: lightblue;
+  }
+</style>
