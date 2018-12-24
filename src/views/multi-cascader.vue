@@ -64,7 +64,9 @@
               :pathDeep="0"
               :prefix-cls="prefixCls"
               :disabled="disabled"
+              :multiple="multiple"
               :onlyLeaf="onlyLeaf"
+              :all-selectable="allSelectable"
           ></OptionPanel>
           <div :class="[prefixCls + '-dropdown']" v-if="filterable && query !== '' && querySelections.length">
             <ul :class="[selectPrefixCls + '-dropdown-list']">
@@ -163,6 +165,13 @@
       singleLineMode     : {
         type   : Boolean,
         default: false,
+      },
+      /**
+       * 是否启用全选
+       */
+      allSelectable      : {
+        type   : Boolean,
+        default: false
       },
       /**
        * 只能选中子节点（控制父节点能否被选中）
@@ -363,18 +372,17 @@
       },
       /**
        * emit消息
-       * @param stringifyOldSelected
        */
-      emitValue (stringifyOldSelected){
-        if (!this.shouldEmit || JSON.stringify(this.selected) === stringifyOldSelected) return;
-
-        this.doEmitValue();
+      emitValue (){
+        if (this.shouldEmit) {
+          this.doEmitValue();
+        }
       },
 
       doEmitValue (){
-        this.$emit('input', assist.deepCopy(this.selected));
-        this.$emit('on-change', assist.deepCopy(this.selected));
-        this.dispatch('FormItem', 'on-form-change', assist.deepCopy(this.selected));
+        this.$emit('input', this.selected);
+        this.$emit('on-change', this.selected);
+        this.dispatch('FormItem', 'on-form-change', this.selected);
       },
 
       handleInput (event){
@@ -428,8 +436,6 @@
        * @param notifyOutside
        */
       removeSelected ({ index = -1, all = false }, notifyOutside = true){
-        const oldSelected = JSON.stringify(this.selected);
-
         if (this.multiple && index !== -1) {
           this.selected.splice(index, 1);
         } else if (all) {
@@ -437,7 +443,7 @@
         }
 
         this.setSelectedFlagOnOptions();
-        notifyOutside && this.emitValue(oldSelected);
+        notifyOutside && this.emitValue();
       },
       /**
        * 添加单个选中项
@@ -446,19 +452,18 @@
        */
       // todo: jcg 整合初始化和后期设置
       setSelected (itemPath, notifyOutside = true){
-        const oldVal = JSON.stringify(this.selected);
         /**
          * 不管是prop还是用户点击都要格式化
          * 如果是prop的情况，对象可能缺少属性
          * 如果是用户点击的情况，对象可能有多余的属性
          */
-        let select   = this.format2OptionObjPath(itemPath);
+        let select = this.format2OptionObjPath(itemPath);
         if (!select.length) return;
         if (this.hasSelectedOrIsSelectedChildNode(select)) {
           return;
         }
 
-        let duplicate = assist.deepCopy(select);
+        let duplicate = select;
         this.multiple ? this.setMultiSelected(duplicate) : this.setSingleSelected(duplicate);
 
         // 如果不是只能选子节点，也没有禁用向上合并时，尝试向上递归合并。
@@ -469,7 +474,7 @@
         // 如果是单选模式，就自动关闭下拉框
         if (!this.multiple) this.handleClose();
 
-        notifyOutside && this.emitValue(oldVal);
+        notifyOutside && this.emitValue();
       },
       /**
        * userPath中的对象并非是options中对象（缺少属性或有多余的属性）
@@ -592,27 +597,19 @@
        * 如果newItem的兄弟全部被选中，则合并成父节点
        */
       merge2Parent (newItemPath){
-        // 是否parent所有的子节点都选中了
-        let childrenAllSelected = (parentPath) => {
-          let currNode = null;
-          for (let item of parentPath) {
-            currNode = !!currNode
-              ? currNode.children ? currNode.children : []
-              : this.options;
-            currNode = currNode.find(i => i.value === item.value);
-            if (!currNode) return false;
-          }
+        function allSelected (parentNode){
+          if (!parentNode.children || !parentNode.children.length) return true;
 
-          return currNode.children.every(i => !!i.selected);
-        };
-
+          return !parentNode.children.every(i => !i.selected);
+        }
 
         // 根节点不合并
         if (newItemPath.length === 1) return;
 
         // 父节点的所有子节点（即item同一级的所有节点）
         let parentPath = newItemPath.slice(0, newItemPath.length - 1);
-        if (childrenAllSelected(parentPath)) {
+        let parentNode = parentPath[ parentPath.length - 1 ];
+        if (allSelected(parentNode)) {
           this.removeChildren(parentPath);
           this.setSelected(parentPath);
         }
@@ -848,8 +845,16 @@
         }
       }
 
-      this.$on('on-selected', item => {
-        this.setSelected(this.hoverPath);
+      this.$on('on-selected', payload => {
+        const { type, item, pathDeep } = payload;
+        if (type === 1) {
+          // 选中一项
+          this.setSelected(this.hoverPath);
+        } else if (type === 2) {
+          // 全选
+          const path = this.hoverPath.slice(0, pathDeep).concat(item);
+          this.setSelected(path);
+        }
 
         if (this.filterable) {
           this.$refs.input.focus();

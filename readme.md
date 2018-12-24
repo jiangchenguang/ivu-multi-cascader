@@ -135,8 +135,9 @@
 |notFoundText|当搜索列表为空时显示的内容|String|'无匹配内容'|
 |multiple|是否启用多选|Boolean|false|
 |singleLineMode|是否启用单行显示|Boolean|false|
+|allSelectable|是否启用全选（前提：开启`multiple`，关闭`onlyLeaf`）|Boolean|false|
 |onlyLeaf|是否只能选择叶子节点|Boolean|false|
-|disableMerge2parent|是否禁用自动合并到父节点的功能（当然，如果启用onlyLeaf，就不能自动合并了。）|Boolean|false|
+|disableMerge2parent|是否禁用自动合并到父节点的功能（前提：开启`onlyLeaf`）|Boolean|false|
 |autoSelect|启用当选项是单一路径时，自动选中的功能|Boolean|false|
 |transfer|是否将弹层放置于 body 内，在 Tabs、带有 fixed 的 Table 列内使用时，建议添加此属性，它将不受父级样式影响，从而达到更好的效果|Boolean|false|
 ### options选项属性
