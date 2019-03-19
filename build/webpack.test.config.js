@@ -1,29 +1,31 @@
 const path = require("path");
 
-function resolve(dir) {
+function resolve (dir){
   return path.join(__dirname, dir);
 }
 
 module.exports = {
-  devtool: "eval-source-map",
   module : {
     rules: [
       {
         test   : /\.vue$/,
         loader : 'vue-loader',
+        include: [
+          resolve("../src"),
+          resolve("../test"),
+        ],
         options: {
           less: 'vue-style-loader!css-loader!less-loader',
         }
       },
       {
         test   : /\.js$/,
+        loader : 'babel-loader',
+        include: [
+          resolve("../src"),
+          resolve("../test"),
+        ],
         exclude: /(node_modules|bower_components)/,
-        use    : {
-          loader : "babel-loader",
-          options: {
-            presets: [ "@babel/preset-env" ]
-          }
-        }
       }
     ]
   },
