@@ -1,4 +1,4 @@
-import Vue from "vue";
+// import Vue from "vue";
 import options from "./options";
 
 function getRenderedText (Component, propsData){
@@ -7,9 +7,9 @@ function getRenderedText (Component, propsData){
   return vm.$el.textContent
 }
 
-describe("typically", function (){
-  it("init", function (){
-    expect(1).toBe(1);
-  })
-})
+// describe("typically", function (){
+//   it("init", function (){
+//     expect(1).toBe(1);
+//   })
+// })
 

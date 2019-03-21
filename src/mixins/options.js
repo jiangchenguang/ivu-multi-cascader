@@ -2,7 +2,8 @@
  * 选项相关的基础函数、属性，业务无关
  */
 
-import { FilterItem, OptionNode } from "@/clazz";
+// import { FilterItem, OptionNode } from "@/clazz";
+import { OptionNode } from "@/clazz";
 import { assist } from '@/utils';
 
 export default {
@@ -28,42 +29,42 @@ export default {
      * 级联 -> 一维数组
      */
     flattenInnerOptions (){
-      let flattenedOptions = [];
-      doFlatten(this.inner_options, [], "", "", this.onlyLeaf, this.separator);
-      return flattenedOptions;
-
-      function doFlatten (
-        optionNodeList,
-        parentPath,
-        parentPathLabel,
-        parentPathValue,
-        onlyLeaf,
-        separator
-      ){
-        for (let optionNode of optionNodeList) {
-          if (!optionNode.children || !onlyLeaf) {
-            // 子节点 或 允许选中父节点
-            flattenedOptions.push(new FilterItem(
-              optionNode,
-              parentPath,
-              parentPathLabel,
-              parentPathValue,
-              separator,
-            ));
-          }
-
-          if (optionNode.children) {
-            doFlatten(
-              optionNode.children,
-              parentPath.concat([ optionNode ]),
-              parentPathLabel ? `${parentPathLabel}${separator}${optionNode.label}` : optionNode.label,
-              parentPathValue ? `${parentPathValue} ${optionNode.value}` : optionNode.value,
-              onlyLeaf,
-              separator
-            );
-          }
-        }
-      }
+      // let flattenedOptions = [];
+      // doFlatten(this.inner_options, [], "", "", this.onlyLeaf, this.separator);
+      // return flattenedOptions;
+      //
+      // function doFlatten (
+      //   optionNodeList,
+      //   parentPath,
+      //   parentPathLabel,
+      //   parentPathValue,
+      //   onlyLeaf,
+      //   separator
+      // ){
+      //   for (let optionNode of optionNodeList) {
+      //     if (!optionNode.children || !onlyLeaf) {
+      //       // 子节点 或 允许选中父节点
+      //       flattenedOptions.push(new FilterItem(
+      //         optionNode,
+      //         parentPath,
+      //         parentPathLabel,
+      //         parentPathValue,
+      //         separator,
+      //       ));
+      //     }
+      //
+      //     if (optionNode.children) {
+      //       doFlatten(
+      //         optionNode.children,
+      //         parentPath.concat([ optionNode ]),
+      //         parentPathLabel ? `${parentPathLabel}${separator}${optionNode.label}` : optionNode.label,
+      //         parentPathValue ? `${parentPathValue} ${optionNode.value}` : optionNode.value,
+      //         onlyLeaf,
+      //         separator
+      //       );
+      //     }
+      //   }
+      // }
     },
   },
   created (){

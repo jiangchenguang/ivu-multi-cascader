@@ -16,7 +16,7 @@ module.exports = function (config){
 
     // list of files / patterns to load in the browser
     files: [
-      'test/**/*.[Ss]pec.js'
+      'test/**/*.spec.js'
     ],
 
 
@@ -51,7 +51,7 @@ module.exports = function (config){
 
 
     // enable / disable watching file and executing tests whenever any file changes
-    autoWatch: false,
+    autoWatch: true,
 
 
     // start these browsers
@@ -66,6 +66,6 @@ module.exports = function (config){
     // how many browser should be started simultaneous
     concurrency: Infinity,
 
-    webpack: webpackConfig
+    webpack: webpackConfig,
   })
 }

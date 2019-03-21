@@ -1,8 +1,6 @@
 /**
  * 单个选项对象
  */
-import { assist } from '@/utils';
-
 export default class OptionNode {
   constructor (
     label,
