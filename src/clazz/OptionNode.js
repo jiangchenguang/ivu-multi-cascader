@@ -1,5 +1,5 @@
 /**
- * 单个选项对象
+ * 选项节点对象
  */
 export default class OptionNode {
   constructor (
@@ -12,21 +12,28 @@ export default class OptionNode {
     children  = [],
   ){
     // 标签
-    this.label     = label.trim();
+    this.label = label.trim();
+
     // 值
-    this.value     = value.trim();
+    this.value = value.trim();
+
     // 前置图标
-    this.icon      = icon.trim();
+    this.icon = icon.trim();
+
     // icon颜色
     this.iconColor = iconColor.trim();
+
     // 指定分组名
-    this.group     = group.trim();
+    this.group = group.trim();
+
     // 是否禁用
-    this.disabled  = disabled;
+    this.disabled = disabled;
+
     // 是否被选中
-    this.selected  = false;
+    this.selected = false;
+
     // 子节点列表
-    this.children  = children;
+    this.children = children;
   }
 
   /**
