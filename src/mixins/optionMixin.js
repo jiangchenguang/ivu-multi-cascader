@@ -1,5 +1,5 @@
 /**
- * 选项相关的基础函数、属性，业务无关
+ * 选项混合，业务无关
  */
 
 import { OptionNode, SelectedPath } from "@/clazz";
@@ -32,7 +32,7 @@ export default {
      */
     flattenInnerOptions (){
       // let flattenedOptions = [];
-      // doFlatten(this.inner_option_list, [], "", "", this.onlyLeaf, this.separator);
+      // doFlatten(this.inner_option_list, [], "", "", this.config.onlyLeaf, this.separator);
       // return flattenedOptions;
       //
       // function doFlatten (
@@ -68,9 +68,6 @@ export default {
       //   }
       // }
     },
-  },
-  created (){
-    this.initOptions();
   },
   mounted (){
   },
@@ -162,7 +159,7 @@ export default {
 
     /**
      * 根据一个value的数组，找到对应的选项节点路径
-     * @param {[string]} valueList 指示了选项的路径
+     * @param {string[]} valueList 指示了选项的路径
      * @return {SelectedPath}
      */
     getOptionPathByValueList (valueList = []){

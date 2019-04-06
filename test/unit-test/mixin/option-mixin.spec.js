@@ -3,7 +3,12 @@ import { optionMixin } from "@/mixins";
 
 // 生成对应的实例
 function genVm (propsData){
-  const Ctor = Vue.extend(optionMixin);
+  const Ctor = Vue.extend({
+    created (){
+      this.initOptions();
+    },
+    mixins: [ optionMixin ]
+  });
   return new Ctor({ propsData: propsData }).$mount();
 }
 
@@ -145,6 +150,44 @@ describe("construction", function (){
     })
     expect(strProp(vm.inner_option_list, 'group')).toBe('');
   })
-
 })
 
+describe('fn:getOptionPathByValueList', () => {
+  let vm = genVm({
+    options: [
+      {
+        label   : "111",
+        value   : "111",
+        children: [
+          {
+            label: "222",
+            value: "222",
+          },
+          {
+            label   : "333",
+            value   : "333",
+            children: [
+              {
+                label: "444",
+                value: "444",
+              },
+            ]
+          },
+        ],
+      },
+    ]
+  })
+
+  it('should found', () => {
+    let path = vm.getOptionPathByValueList([ '111', '333', '444' ]);
+    expect(strProp(path.path, 'value')).toBe('111,333,444');
+  })
+
+  it('should not found', () => {
+    let path = vm.getOptionPathByValueList([ '000' ]);
+    expect(path).toBe(null);
+
+    path = vm.getOptionPathByValueList([ '111', '222', '444' ]);
+    expect(path).toBe(null);
+  });
+})

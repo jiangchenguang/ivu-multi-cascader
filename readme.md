@@ -137,7 +137,7 @@
 |singleLineMode|是否启用单行显示|Boolean|false|
 |allSelectable|是否启用全选（前提：开启`multiple`，关闭`onlyLeaf`）|Boolean|false|
 |onlyLeaf|是否只能选择叶子节点|Boolean|false|
-|disableMerge2parent|是否禁用自动合并到父节点的功能（前提：开启`onlyLeaf`）|Boolean|false|
+|disableMerge2parent|是否禁用自动合并到父节点的功能（前提：关闭`onlyLeaf`）|Boolean|false|
 |autoSelect|启用当选项是单一路径时，自动选中的功能|Boolean|false|
 |transfer|是否将弹层放置于 body 内，在 Tabs、带有 fixed 的 Table 列内使用时，建议添加此属性，它将不受父级样式影响，从而达到更好的效果|Boolean|false|
 ### options选项属性

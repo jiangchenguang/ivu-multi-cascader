@@ -1,9 +1,9 @@
+import Config from "./Config";
 import OptionNode from "./OptionNode";
 import SelectedPath from "./SelectedPath";
-import SelectedNode from "./SelectedNode";
 
 export {
+  Config,
   OptionNode,
   SelectedPath,
-  SelectedNode
 }
