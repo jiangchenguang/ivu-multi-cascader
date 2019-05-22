@@ -4,180 +4,23 @@
   <title>test</title>
   <meta charset="utf-8">
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue"></script>
-  <link rel="stylesheet" type="text/css" href="http://unpkg.com/iview@2.7.4/dist/styles/iview.css">
-  <script type="text/javascript" src="http://unpkg.com/iview@2.7.4/dist/iview.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="http://unpkg.com/iview@2.14.3/dist/styles/iview.css">
+  <script type="text/javascript" src="http://unpkg.com/iview@2.14.3/dist/iview.min.js"></script>
   <script type="text/javascript" src="./multi-cascader.js"></script>
 </head>
 <body>
 <div id="app">
-  <collapse>
-    <panel>
-      multi-cascader
-      <div slot="content">
-        <i-form :model="model" :rules="validate">
-          <form-item prop="cascader">
-            <Multi-cascader ref="multi"
-                            :options="cascadeOption"
-                            v-model="model.cascader"
-                            filterable
-                            single-line-mode
-                            separator="-"
-                            transfer
-            ></Multi-cascader>
-          </form-item>
-        </i-form>
-      </div>
-    </panel>
-  </collapse>
+  <Multi-cascader></Multi-cascader>
 </div>
-<script type="text/javascript" src="data.js"></script>
 <script>
   new Vue({
     el     : '#app',
-    data   : {
-      leaf         : true,
-      cascadeOption: tree,
-      // cascadeOption: [
-      //   {
-      //     value   : 'beijing',
-      //     label   : '北京',
-      //     icon    : 'person-stalker',
-      //     children: [
-      //       {
-      //         value: 'gugong',
-      //         label: '故宫',
-      //         icon : 'person',
-      //       },
-      //       {
-      //         value: 'tiantan',
-      //         label: '天坛',
-      //         icon : 'person',
-      //       },
-      //       {
-      //         value: 'wangfujing',
-      //         label: '王府井',
-      //         icon : 'person',
-      //       }
-      //     ]
-      //   }, {
-      //     value   : 'jiangsu',
-      //     label   : '江苏',
-      //     icon    : 'person-stalker',
-      //     children: [
-      //       {
-      //         value   : 'nanjing',
-      //         label   : '南京',
-      //         icon    : 'person-stalker',
-      //         children: [
-      //           {
-      //             value: 'fuzimiao',
-      //             label: '夫子庙',
-      //             icon : 'person',
-      //           }
-      //         ]
-      //       },
-      //       {
-      //         value   : 'suzhou',
-      //         label   : '苏州',
-      //         icon    : 'person-stalker',
-      //         children: [
-      //           {
-      //             value: 'zhuozhengyuan',
-      //             label: '拙政园',
-      //             icon : 'person',
-      //           },
-      //           {
-      //             value: 'zhejiang',
-      //             label: '浙江',
-      //             icon : 'person',
-      //           }
-      //         ]
-      //       }
-      //     ],
-      //   }, {
-      //     value: 'zhejiang',
-      //     label: '浙江',
-      //     icon : 'person',
-      //   }
-      // ],
-      model        : {
-        cascader: [
-          // [
-          //   {
-          //     value: 'G:dep220170628023',
-          //     label: '运营管理部',
-          //   },
-          //   {
-          //     value: 'G:dep220170628045',
-          //     label: '运营支撑组'
-          //   },
-          //   {
-          //     value: 'U:wanglm',
-          //     label: '王黎明'
-          //   }
-          // ]
-        ],
-      },
-      validate     : {
-        cascader: {
-          type    : 'array',
-          required: true,
-          trigger : 'change',
-          message : 'Cannot be empty',
-        }
-      },
-    },
+    data   : {},
     created (){
-      // console.log("tree:", tree);
-      // setTimeout(() => {
-      //   let find = this.$refs.multi.findPathByValue("value", "U:wanglm");
-      //   this.model.cascader.push(find[ 0 ]);
-      // }, 3000)
     },
     mounted (){
-      let newOpt = [
-        {
-          value   : 'beijing',
-          label   : '北京',
-          icon    : 'person-stalker',
-          children: [
-            {
-              value: 'gugong',
-              label: '故宫',
-              icon : 'person',
-            },
-            {
-              value: 'tiantan',
-              label: '天坛',
-              icon : 'person',
-            },
-            {
-              value: 'wangfujing',
-              label: '王府井',
-              icon : 'person',
-            }
-          ]
-        }
-      ]
-
-      setTimeout(() => {
-        // this.cascadeOption = newOpt;
-        // this.cascadeOption.splice(
-        //   0,
-        //   this.cascadeOption.length,
-        //   ...newOpt
-        // )
-        // let find = this.$refs.multi.findPathByValue("value", "U:wanglm");
-        // this.model.cascader.push(find[ 0 ]);
-        // find = this.$refs.multi.findPathByValue("value", "G:dep220170628023");
-        // this.model.cascader.push(find[ 0 ]);
-      }, 5000)
     },
-    watch  : {
-      'model.cascader': function (){
-        console.log('[index.html]cascader:', JSON.parse(JSON.stringify(this.model.cascader)));
-      }
-    },
+    watch  : {},
     methods: {}
   })
 </script>
