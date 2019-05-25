@@ -10,49 +10,82 @@
                   @remove="onRemove"
       ></SelectHead>
     </div>
+    <transition name="slide-up">
+      <Drop
+          v-show="visible"
+          :class="dropCls"
+          ref="drop"
+          :data-transfer="transfer"
+          v-transfer-dom>
+        <div>
+          <CascadePanel
+              v-show="!config.filterable || (config.filterable && query === '')"
+              :option-list="options"
+              :pathDeep="0"
+              :config="config"
+          ></CascadePanel>
+        </div>
+      </Drop>
+    </transition>
   </div>
 </template>
 
 <script>
   import { Config, OptionNode, SelectedPath } from '@/clazz';
   import SelectHead from './select-head';
-
-  const prefixCls = 'ivu-select';
+  import CascadePanel from './cascade-panel';
+  import Drop from './dropdown.vue';
+  import { selPrefix, casPrefix } from "@/share";
 
   export default {
     components: {
+      CascadePanel,
+      Drop,
       SelectHead
     },
     data (){
+      let options = [];
+      options.push(this.genOptionNode('label-0', 'value-0', [
+        this.genOptionNode('label-01', 'value-01', [], true),
+        this.genOptionNode('label-02', 'value-02', [], true)
+      ], true));
+      options.push(this.genOptionNode('label-1', 'value-1', []));
+      console.log('options:', options);
+
       let selected = [];
       selected.push(this.genSelectedPath(2));
 
       return {
-        prefixCls: prefixCls,
-        config   : new Config(true, false, false, false, false, label => label.join(this.separator), '/',),
-        selected
+        visible: true,
+        query  : '',
+        config : new Config(true, false, false, false, false, label => label.join(this.separator), '/',),
+        selected,
+        options,
       }
     },
     computed  : {
       classes (){
         return [
-          `${prefixCls}`,
+          `${casPrefix}`,
           {
-            [ `${prefixCls}-visible` ]     : this.visible,
-            [ `${prefixCls}-disabled` ]    : this.disabled,
-            [ `${prefixCls}-multiple` ]    : this.multiple,
-            [ `${prefixCls}-single` ]      : !this.multiple,
-            [ `${prefixCls}-show-clear` ]  : this.showCloseIcon,
-            [ `${prefixCls}-${this.size}` ]: !!this.size
+            [ `${selPrefix}-disabled` ]  : this.disabled,
+            [ `${selPrefix}-multiple` ]  : this.multiple,
+            [ `${selPrefix}-single` ]    : !this.multiple,
+            [ `${selPrefix}-show-clear` ]: this.showCloseIcon,
           }
         ];
       },
+
       selectionCls (){
         return {
-          [ `${prefixCls}-selection` ]        : !this.autoComplete,
-          [ `${prefixCls}-selection-focused` ]: this.isFocused
+          [ `${selPrefix}-selection` ]        : !this.autoComplete,
+          [ `${selPrefix}-selection-focused` ]: this.isFocused
         };
       },
+
+      dropCls (){
+        return this.config.transfer ? `${casPrefix}-transfer` : '';
+      }
     },
     methods   : {
       onRemove (idxList){
