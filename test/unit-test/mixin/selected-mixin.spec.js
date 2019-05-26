@@ -46,8 +46,8 @@ function genVm (propsData){
 }
 
 
-function strValue (selectedPath){
-  return selectedPath.path.map(i => i.value).join();
+function strValue (selected){
+  return selected.path.map(i => i.value).join();
 }
 
 describe("interface:selectedAddByValueList", () => {

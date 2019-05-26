@@ -26,13 +26,13 @@ export default {
      */
     getItemPath (attrName = 'value', attrPathList = [], attrPathString = ""){
       let format2OptionObjPath = (attrPath) =>{
-        let selectedPath = [];
+        let selected = [];
         let currNode = this.options;
         let find = true;
         for (let item of attrPath) {
           currNode = currNode.find(i => i[ attrName ] === item[ attrName ]);
           if (currNode) {
-            selectedPath.push(currNode);
+            selected.push(currNode);
             currNode = currNode.children;
           } else {
             find = false;
@@ -40,7 +40,7 @@ export default {
           }
         }
 
-        return find ? selectedPath : [];
+        return find ? selected : [];
       };
 
       if ((!attrPathList || !attrPathList.length) && !attrPathString) return [];

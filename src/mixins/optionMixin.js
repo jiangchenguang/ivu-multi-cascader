@@ -2,7 +2,7 @@
  * 选项混合，业务无关
  */
 
-import { OptionNode, SelectedPath } from "@/clazz";
+import { OptionNode, Selected } from "@/clazz";
 import { assist } from '@/utils';
 
 export default {
@@ -154,7 +154,7 @@ export default {
     /**
      * 根据一个value的数组，找到对应的选项节点路径
      * @param {string[]} valueList 指示了选项的路径
-     * @return {SelectedPath}
+     * @return {Selected}
      */
     getOptionPathByValueList (valueList = []){
       let find, path = [], list = this.inner_option_list;
@@ -169,7 +169,7 @@ export default {
         }
       }
 
-      return new SelectedPath(path);
+      return new Selected(path);
     },
     /**
      * 根据用户对象的路径找到一个相同的路径，但节点都是option中的对象
@@ -177,7 +177,7 @@ export default {
      * @param propName 指定通过对应的属性查找
      */
     getOptionPathByUserObjPath (userObjPath = [], propName = "value"){
-      let selectedPath = [];
+      let selected = [];
       let currNode     = this.inner_option_list;
       for (let path of userObjPath) {
         currNode = currNode.find(item => {
@@ -187,14 +187,14 @@ export default {
             && item[ propName ] === path[ propName ]
         });
         if (currNode) {
-          selectedPath.push(currNode);
+          selected.push(currNode);
           currNode = currNode.children;
         } else {
           return [];
         }
       }
 
-      return selectedPath;
+      return selected;
     },
 
     /**

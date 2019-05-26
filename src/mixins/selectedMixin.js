@@ -2,7 +2,7 @@
  * 选中项混合，业务无关
  */
 
-import { SelectedPath } from "@/clazz";
+import { Selected } from "@/clazz";
 
 export default {
   props   : {
@@ -23,7 +23,7 @@ export default {
     return {
       /**
        * 选中项列表
-       * @type {SelectedPath[]}
+       * @type {Selected[]}
        */
       selected: [],
     }
@@ -67,16 +67,16 @@ export default {
      * @param {string[]} valueList 指示了选项的路径
      */
     selectedAddByValueList (valueList){
-      let selectedPath = this.getOptionPathByValueList(valueList);
-      if (selectedPath) {
-        this.doAdd(selectedPath);
+      let selected = this.getOptionPathByValueList(valueList);
+      if (selected) {
+        this.doAdd(selected);
       }
     },
 
     /**
      * 删除选中项
      * @param {number[]} idxList 待删除选中项的index的数组
-     * @return {SelectedPath[]}
+     * @return {Selected[]}
      */
     selectedDeleteByIdxList (idxList = []){
       return this.doDelete(idxList);
@@ -104,7 +104,7 @@ export default {
 
     /**
      * 移除所有选中项
-     * @return {SelectedPath[]}
+     * @return {Selected[]}
      */
     selectedDeleteAll (){
       let list = this.selected.map((v, idx) => idx);
@@ -115,16 +115,16 @@ export default {
 
     /**
      * 真正添加一个选中项
-     * @param {SelectedPath} selectedPath
+     * @param {Selected} selected
      */
-    doAdd (selectedPath){
+    doAdd (selected){
       {
         // 判断是否需要添加
         if (
-          !selectedPath instanceof SelectedPath ||
-          !selectedPath.path.length || // 没有长度
-          this.selected.some(i => i.isSamePath(selectedPath)) || // 已在选中项之列
-          (this.config.onlyLeaf && !selectedPath.isLeaf()) // 在只能选叶子节点的情况下，添加一个非叶子节点
+          !selected instanceof Selected ||
+          !selected.path.length || // 没有长度
+          this.selected.some(i => i.isSamePath(selected)) || // 已在选中项之列
+          (this.config.onlyLeaf && !selected.isLeaf()) // 在只能选叶子节点的情况下，添加一个非叶子节点
         ) {
           return;
         }
@@ -133,7 +133,7 @@ export default {
       {
         // 删除现有选中项
         // 不管是单选还是复现，现有选中项如果是待添加选中项的后代，移除
-        this.doDeleteDescendant(selectedPath);
+        this.doDeleteDescendant(selected);
         if (!this.config.multiple && this.selected.length) {
           // 单选模式下，如果选中项不是待选中项的后代，就指定移除并清空标记。
           let [ only ] = this.doDelete([ 0 ]);
@@ -143,11 +143,11 @@ export default {
 
       {
         // 添加选中项并置标记
-        this.selected.push(selectedPath);
-        let path = selectedPath.selectUpstream();
+        this.selected.push(selected);
+        let path = selected.selectUpstream();
         // 如果返回的路径比selectedPath短，说明合并过了，根据配置决定是否向上合并
-        if (!this.config.disableMerge2parent && path.length < selectedPath.path.length) {
-          this.doAdd(new SelectedPath(path));
+        if (!this.config.disableMerge2parent && path.length < selected.path.length) {
+          this.doAdd(new Selected(path));
         }
       }
     },
@@ -155,7 +155,7 @@ export default {
     /**
      * 真正删除选中项
      * @param {number[]} idxList 待删除选中项的index的数组
-     * @return {SelectedPath[]}
+     * @return {Selected[]}
      */
     doDelete (idxList = []){
       let len, idx, toRemoved, removed = [];
@@ -175,8 +175,8 @@ export default {
 
     /**
      * 移除待添加项的后代选中项
-     * @param {SelectedPath} optionPath
-     * @return {SelectedPath[]}
+     * @param {Selected} optionPath
+     * @return {Selected[]}
      */
     doDeleteDescendant (optionPath){
       if (optionPath.isLeaf()) return [];

@@ -481,13 +481,13 @@
        * 根据value取options中的对象组成的对象
        */
       format2OptionObjPath (userPath){
-        let selectedPath = [];
+        let selected = [];
         let currNode     = this.options;
         let find         = true;
         for (let item of userPath) {
           currNode = currNode.find(i => i.value === item.value);
           if (currNode) {
-            selectedPath.push(currNode);
+            selected.push(currNode);
             currNode = currNode.children;
           } else {
             find = false;
@@ -495,21 +495,21 @@
           }
         }
 
-        return find ? selectedPath : [];
+        return find ? selected : [];
       },
       /**
        * 【单选】设置选中项
-       * @param selectedPath
+       * @param selected
        */
-      setSingleSelected (selectedPath){
-        this.selected.splice(0, this.selected.length, ...selectedPath);
+      setSingleSelected (selected){
+        this.selected.splice(0, this.selected.length, ...selected);
       },
       /**
        * 【多选】设置选中项
-       * @param selectedPath
+       * @param selected
        */
-      setMultiSelected (selectedPath){
-        if (!selectedPath.length) return;
+      setMultiSelected (selected){
+        if (!selected.length) return;
         {
           // todo: jcg判断item是否已经被选择
           // for (let it of this.selected) {
@@ -522,12 +522,12 @@
         {
           // 在能选到父节点的情况下，假设selected存在selectedItem的子项，去除
           if (!this.onlyLeaf) {
-            this.removeChildren(selectedPath);
+            this.removeChildren(selected);
           }
         }
         {
           // 添加选中项
-          this.selected.push(selectedPath);
+          this.selected.push(selected);
         }
 
       },
@@ -637,10 +637,10 @@
        */
       setSelectedFlagOnOptions (){
         // 哪个元素选中了就做一个标记
-        let makeSelected        = (selectedPath, options) => {
+        let makeSelected        = (selected, options) => {
           let currNode = options;
-          let len      = selectedPath.length;
-          for (let [ index, item ] of selectedPath.entries()) {
+          let len      = selected.length;
+          for (let [ index, item ] of selected.entries()) {
             currNode = currNode.find(i => i.value === item.value);
             if (!currNode) return;
 

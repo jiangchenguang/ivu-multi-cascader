@@ -40,7 +40,7 @@
       config  : Config,
       /**
        * 选中项列表
-       * @type {SelectedPath[]}
+       * @type {Selected[]}
        */
       selected: Array,
     },

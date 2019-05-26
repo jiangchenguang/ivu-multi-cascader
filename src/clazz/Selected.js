@@ -1,7 +1,7 @@
 /**
- * 选中项路径
+ * 选中项
  */
-export default class SelectedPath {
+export default class Selected {
 
   /**
    * 构造函数
@@ -21,7 +21,7 @@ export default class SelectedPath {
 
   /**
    * 是否相同路径
-   * @param {SelectedPath} other
+   * @param {Selected} other
    * @returns {boolean}
    */
   isSamePath (other){
@@ -37,7 +37,7 @@ export default class SelectedPath {
 
   /**
    * 是否是入参的子孙节点
-   * @param {SelectedPath} other
+   * @param {Selected} other
    * @return {boolean}
    */
   isDescendantOf (other){
@@ -54,7 +54,7 @@ export default class SelectedPath {
 
   /**
    * 是否是入参的祖先节点
-   * @param {SelectedPath} other
+   * @param {Selected} other
    * @return {boolean}
    */
   isAncestorOf (other){

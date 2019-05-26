@@ -1,5 +1,4 @@
-import { OptionNode, SelectedPath } from "@/clazz";
-import { genOneSelected, genOptionNode, genOptionList } from "@/../test/helper";
+import { genOneSelected, genOneSelectedByOptionList, genOptionNode, genOptionList } from "@/../test/helper";
 
 describe("fn:isSamePath", function (){
   it("same", function (){
@@ -149,11 +148,11 @@ describe("fn:isLeaf", function (){
 
 describe("fn:selectUpstream", function (){
   it("first level should not upstream", function (){
-    let options      = genOptionList([
+    let options  = genOptionList([
       { label: 'label-0', value: 'value-0' },
     ]);
-    let selectedPath = genOneSelected([ options[ 0 ] ]);
-    let path         = selectedPath.selectUpstream();
+    let selected = genOneSelected([ options[ 0 ] ]);
+    let path     = selected.selectUpstream();
     expect(path.length).toBe(1);
   })
 
@@ -172,21 +171,21 @@ describe("fn:selectUpstream", function (){
     options[ 0 ].children[ 0 ].selected = true;
 
     // select 'value-01'
-    let selectedPath = new SelectedPath([
+    let selected = genOneSelectedByOptionList([
       options[ 0 ],
       options[ 0 ].children[ 1 ]
     ])
-    let path         = selectedPath.selectUpstream();
+    let path     = selected.selectUpstream();
     expect(path.length).toBe(2);
     expect(path[ 0 ].value).toBe("value-0");
     expect(path[ 1 ].value).toBe("value-01");
 
     // select 'value-02'
-    selectedPath = new SelectedPath([
+    selected = genOneSelectedByOptionList([
       options[ 0 ],
       options[ 0 ].children[ 2 ]
     ])
-    path         = selectedPath.selectUpstream();
+    path     = selected.selectUpstream();
     expect(path.length).toBe(1);
     expect(path[ 0 ].value).toBe("value-0");
   })
@@ -198,8 +197,8 @@ describe("fn:unselectUpstream", function (){
       { label: 'label-0', value: 'value-0' },
     ]);
     options[ 0 ].selected = true;
-    let selectedPath      = new SelectedPath([ options[ 0 ] ]);
-    selectedPath.unselectUpstream();
+    let selected          = genOneSelectedByOptionList([ options[ 0 ] ]);
+    selected.unselectUpstream();
     expect(options[ 0 ].selected).toBe(false);
   })
 
@@ -224,19 +223,19 @@ describe("fn:unselectUpstream", function (){
       }
     ]);
 
-    let selectedPath = new SelectedPath([
+    let selected = genOneSelectedByOptionList([
       options[ 0 ],
       options[ 0 ].children[ 0 ],
       options[ 0 ].children[ 0 ].children[ 0 ]
     ])
 
-    selectedPath.unselectUpstream();
-    expect(selectedPath.path[ 0 ].children[ 0 ].selected).toBe(false);
-    expect(selectedPath.path[ 0 ].selected).toBe(false);
+    selected.unselectUpstream();
+    expect(selected.path[ 0 ].children[ 0 ].selected).toBe(false);
+    expect(selected.path[ 0 ].selected).toBe(false);
 
-    let path = selectedPath.selectUpstream();
-    expect(selectedPath.path[ 0 ].children[ 0 ].selected).toBe(true);
-    expect(selectedPath.path[ 0 ].selected).toBe(true);
+    let path = selected.selectUpstream();
+    expect(selected.path[ 0 ].children[ 0 ].selected).toBe(true);
+    expect(selected.path[ 0 ].selected).toBe(true);
     expect(path.length).toBe(1);
     expect(path[ 0 ].value).toBe("value-0");
   })
