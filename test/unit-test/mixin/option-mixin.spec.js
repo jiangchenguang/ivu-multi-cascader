@@ -42,26 +42,17 @@ describe("construction", function (){
         {
           label    : "111",
           value    : "222",
-          icon     : "moon",
-          iconColor: "white",
-          group    : "first",
           disabled : false,
         },
         {
           label    : "333",
           value    : "444",
-          icon     : "son",
-          iconColor: "red",
-          group    : "second",
           disabled : true,
         },
       ]
     })
     expect(strProp(vm.inner_option_list, 'label')).toBe("111,333");
     expect(strProp(vm.inner_option_list, 'value')).toBe("222,444");
-    expect(strProp(vm.inner_option_list, 'icon')).toBe('moon,son');
-    expect(strProp(vm.inner_option_list, 'iconColor')).toBe('white,red');
-    expect(strProp(vm.inner_option_list, 'group')).toBe('first,second');
     assertDisableProp(vm.inner_option_list, [ false, true ]);
   })
 
@@ -75,17 +66,11 @@ describe("construction", function (){
             {
               label    : "111",
               value    : "222",
-              icon     : "moon",
-              iconColor: "white",
-              group    : "first",
               disabled : false,
             },
             {
               label    : "333",
               value    : "444",
-              icon     : "son",
-              iconColor: "red",
-              group    : "second",
               disabled : false,
             },
           ],
@@ -95,9 +80,6 @@ describe("construction", function (){
     assertChildrenLen(vm.inner_option_list, [ 2 ]);
     expect(strProp(vm.inner_option_list[ 0 ].children, 'label')).toBe("111,333");
     expect(strProp(vm.inner_option_list[ 0 ].children, 'value')).toBe("222,444");
-    expect(strProp(vm.inner_option_list[ 0 ].children, 'icon')).toBe('moon,son');
-    expect(strProp(vm.inner_option_list[ 0 ].children, 'iconColor')).toBe('white,red');
-    expect(strProp(vm.inner_option_list[ 0 ].children, 'group')).toBe('first,second');
     assertDisableProp(vm.inner_option_list[ 0 ].children, [ false, false ]);
   })
 
@@ -115,40 +97,6 @@ describe("construction", function (){
       ]
     })
     expect(vm.inner_option_list.length).toBe(0);
-  })
-
-  it("invalid icon, iconColor", function (){
-    let vm = genVm({
-      options: [
-        {
-          label    : "111",
-          value    : "222",
-          icon     : 123,
-          iconColor: "white",
-        },
-        {
-          label    : "333",
-          value    : "444",
-          icon     : "son",
-          iconColor: [],
-        },
-      ]
-    })
-    expect(strProp(vm.inner_option_list, 'icon')).toBe(',son');
-    expect(strProp(vm.inner_option_list, 'iconColor')).toBe('white,');
-  })
-
-  it("invalid group", function (){
-    let vm = genVm({
-      options: [
-        {
-          label: "111",
-          value: "222",
-          group: 123,
-        },
-      ]
-    })
-    expect(strProp(vm.inner_option_list, 'group')).toBe('');
   })
 })
 

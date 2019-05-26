@@ -5,11 +5,8 @@ export default class OptionNode {
   constructor (
     label,
     value,
-    icon      = "",
-    group     = "",
-    iconColor = "black",
-    disabled  = false,
-    children  = [],
+    children = [],
+    disabled = false,
   ){
     /**
      * 标签
@@ -28,24 +25,6 @@ export default class OptionNode {
      * @type {boolean}
      */
     this.selected = false;
-
-    /**
-     * 图标（iview中icon的名字）
-     * @type {string}
-     */
-    this.icon = icon.trim();
-
-    /**
-     * 图标颜色
-     * @type {string}
-     */
-    this.iconColor = iconColor.trim();
-
-    /**
-     * 分组名
-     * @type {string}
-     */
-    this.group = group.trim();
 
     /**
      * 禁用状态

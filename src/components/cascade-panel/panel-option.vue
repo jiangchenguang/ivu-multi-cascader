@@ -1,6 +1,5 @@
 <template>
   <li :class="classes">
-    <Icon :type="option.icon" :color="option.iconColor" style="left: 2px;"/>
     {{ option.label }}
     <i v-if="showArrow" class="ivu-icon ivu-icon-ios-arrow-right"></i>
   </li>

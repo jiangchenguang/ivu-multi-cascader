@@ -1,128 +1,177 @@
 import { OptionNode, SelectedPath } from "@/clazz";
-
-/**
- * 新建选项列表
- * @param len
- * @param selected
- * @return {OptionNode[]}
- */
-function genOptionList (len, selected = false){
-  let list = [];
-  for (let i = 0; i < len; i++) {
-    list.push(genOptionNode(`label-${i}`, `value-${i}`, [], selected));
-  }
-  return list;
-}
-
-/**
- * 新建一个选项节点
- * @param label
- * @param value
- * @param children
- * @param selected
- * @return {OptionNode}
- */
-function genOptionNode (label, value, children = [], selected = false){
-  let node      = new OptionNode(label, value, "", "", "", false, children);
-  node.selected = selected;
-  return node;
-}
-
-function genSelectedPath (len, valueList = []){
-  let list = [];
-  for (let i = 0; i < len; i++) {
-    list.push(genOptionNode(`label-${i}`, `${valueList[ i ] ? valueList[ i ] : `value-${i}`}`));
-  }
-
-  return new SelectedPath(list);
-}
+import { genOneSelected, genOptionNode, genOptionList } from "@/../test/helper";
 
 describe("fn:isSamePath", function (){
   it("same", function (){
-    let path1 = genSelectedPath(3);
-    let path2 = genSelectedPath(3);
-    expect(path1.isSamePath(path2)).toBe(true);
+    let nodeA = genOneSelected([
+      { label: 'label-0', value: 'value-0' },
+      { label: 'label-1', value: 'value-1' },
+      { label: 'label-2', value: 'value-2' },
+    ])
+    let nodeB = genOneSelected([
+      { label: 'label-0', value: 'value-0' },
+      { label: 'label-1', value: 'value-1' },
+      { label: 'label-2', value: 'value-2' },
+    ])
+    expect(nodeA.isSamePath(nodeB)).toBe(true);
   })
 
   it("diff len", function (){
-    let path1 = genSelectedPath(3);
-    let path2 = genSelectedPath(2);
+    let path1 = genOneSelected([
+      { label: 'label-0', value: 'value-0' },
+      { label: 'label-1', value: 'value-1' },
+      { label: 'label-2', value: 'value-2' },
+    ])
+    let path2 = genOneSelected([
+      { label: 'label-0', value: 'value-0' },
+      { label: 'label-1', value: 'value-1' },
+    ])
     expect(path1.isSamePath(path2)).toBe(false);
   })
 
   it("diff value", function (){
-    let path1 = genSelectedPath(3);
-    let path2 = genSelectedPath(3, [ "value-1" ]);
+    let path1 = genOneSelected([
+      { label: 'label-0', value: 'value-0' },
+      { label: 'label-1', value: 'value-1' },
+      { label: 'label-2', value: 'value-2' },
+    ])
+    let path2 = genOneSelected([
+      { label: 'label-0', value: 'value-1' },
+      { label: 'label-1', value: 'value-1' },
+      { label: 'label-2', value: 'value-2' },
+    ])
     expect(path1.isSamePath(path2)).toBe(false);
   })
 })
 
 describe("fn:isDescendantOf", function (){
   it("descendant", function (){
-    let path1 = genSelectedPath(3);
-    let path2 = genSelectedPath(2);
+    let path1 = genOneSelected([
+      { label: 'label-0', value: 'value-0' },
+      { label: 'label-1', value: 'value-1' },
+      { label: 'label-2', value: 'value-2' },
+    ])
+    let path2 = genOneSelected([
+      { label: 'label-0', value: 'value-0' },
+      { label: 'label-1', value: 'value-1' },
+    ])
     expect(path1.isDescendantOf(path2)).toBe(true);
   })
 
   it("same len", function (){
-    let path1 = genSelectedPath(3);
-    let path2 = genSelectedPath(3);
+    let path1 = genOneSelected([
+      { label: 'label-0', value: 'value-0' },
+      { label: 'label-1', value: 'value-1' },
+      { label: 'label-2', value: 'value-2' },
+    ])
+    let path2 = genOneSelected([
+      { label: 'label-0', value: 'value-0' },
+      { label: 'label-1', value: 'value-1' },
+      { label: 'label-2', value: 'value-2' },
+    ])
     expect(path1.isDescendantOf(path2)).toBe(false);
   })
 
   it("diff value", function (){
-    let path1 = genSelectedPath(3);
-    let path2 = genSelectedPath(2, [ "value-1" ]);
+    let path1 = genOneSelected([
+      { label: 'label-0', value: 'value-0' },
+      { label: 'label-1', value: 'value-1' },
+      { label: 'label-2', value: 'value-2' },
+    ])
+    let path2 = genOneSelected([
+      { label: 'label-0', value: 'value-0' },
+      { label: 'label-1', value: 'value-2' },
+    ])
     expect(path1.isDescendantOf(path2)).toBe(false);
   })
 })
 
 describe("fn:isAncestorOf", function (){
   it("descendant", function (){
-    let path1 = genSelectedPath(3);
-    let path2 = genSelectedPath(2);
+    let path1 = genOneSelected([
+      { label: 'label-0', value: 'value-0' },
+      { label: 'label-1', value: 'value-1' },
+      { label: 'label-2', value: 'value-2' },
+    ])
+    let path2 = genOneSelected([
+      { label: 'label-0', value: 'value-0' },
+      { label: 'label-1', value: 'value-1' },
+    ])
     expect(path2.isAncestorOf(path1)).toBe(true);
   })
 
   it("same len", function (){
-    let path1 = genSelectedPath(3);
-    let path2 = genSelectedPath(3);
+    let path1 = genOneSelected([
+      { label: 'label-0', value: 'value-0' },
+      { label: 'label-1', value: 'value-1' },
+      { label: 'label-2', value: 'value-2' },
+    ])
+    let path2 = genOneSelected([
+      { label: 'label-0', value: 'value-0' },
+      { label: 'label-1', value: 'value-1' },
+      { label: 'label-2', value: 'value-2' },
+    ])
     expect(path1.isAncestorOf(path2)).toBe(false);
   })
 
   it("diff value", function (){
-    let path1 = genSelectedPath(3);
-    let path2 = genSelectedPath(2, [ "value-1" ]);
+    let path1 = genOneSelected([
+      { label: 'label-0', value: 'value-0' },
+      { label: 'label-1', value: 'value-1' },
+      { label: 'label-2', value: 'value-2' },
+    ])
+    let path2 = genOneSelected([
+      { label: 'label-0', value: 'value-0' },
+      { label: 'label-1', value: 'value-2' },
+    ])
     expect(path2.isAncestorOf(path1)).toBe(false);
   })
 })
 
 describe("fn:isLeaf", function (){
   it("has no child", function (){
-    let path1 = genSelectedPath(2);
+    let path1 = genOneSelected([
+      { label: 'label-0', value: 'value-0' },
+      { label: 'label-1', value: 'value-1' },
+    ])
     expect(path1.isLeaf()).toBe(true);
   })
 
   it("has child", function (){
-    let path1 = genSelectedPath(2);
-    path1.path[ 1 ].children.push(genOptionNode("child", "child"));
+    let path1 = genOneSelected([
+      { label: 'label-0', value: 'value-0' },
+      { label: 'label-1', value: 'value-1' },
+    ])
+    path1.path[ 1 ].children.push(genOptionNode({ label: "child", value: "child" }));
     expect(path1.isLeaf()).toBe(false);
   })
 })
 
 describe("fn:selectUpstream", function (){
-  it("first class should not upstream", function (){
-    let options      = genOptionList(1);
-    let selectedPath = new SelectedPath([ options[ 0 ] ]);
+  it("first level should not upstream", function (){
+    let options      = genOptionList([
+      { label: 'label-0', value: 'value-0' },
+    ]);
+    let selectedPath = genOneSelected([ options[ 0 ] ]);
     let path         = selectedPath.selectUpstream();
     expect(path.length).toBe(1);
   })
 
   it("should upstream when sibling all selected", function (){
-    let options                         = genOptionList(1);
-    options[ 0 ].children               = genOptionList(3);
+    let options = genOptionList([
+      {
+        label      : 'label-0', value: 'value-0', disabled: false, children: [
+          { label: 'label-00', value: 'value-00', disabled: false, children: [], selected: false },
+          { label: 'label-01', value: 'value-01', disabled: false, children: [], selected: false },
+          { label: 'label-02', value: 'value-02', disabled: false, children: [], selected: false },
+        ], selected: false
+      }
+    ]);
+
+    // select 'value-00'
     options[ 0 ].children[ 0 ].selected = true;
 
+    // select 'value-01'
     let selectedPath = new SelectedPath([
       options[ 0 ],
       options[ 0 ].children[ 1 ]
@@ -130,8 +179,9 @@ describe("fn:selectUpstream", function (){
     let path         = selectedPath.selectUpstream();
     expect(path.length).toBe(2);
     expect(path[ 0 ].value).toBe("value-0");
-    expect(path[ 1 ].value).toBe("value-1");
+    expect(path[ 1 ].value).toBe("value-01");
 
+    // select 'value-02'
     selectedPath = new SelectedPath([
       options[ 0 ],
       options[ 0 ].children[ 2 ]
@@ -144,7 +194,9 @@ describe("fn:selectUpstream", function (){
 
 describe("fn:unselectUpstream", function (){
   it("first class unselected", function (){
-    let options           = genOptionList(1);
+    let options           = genOptionList([
+      { label: 'label-0', value: 'value-0' },
+    ]);
     options[ 0 ].selected = true;
     let selectedPath      = new SelectedPath([ options[ 0 ] ]);
     selectedPath.unselectUpstream();
@@ -152,9 +204,25 @@ describe("fn:unselectUpstream", function (){
   })
 
   it("should upstream when sibling all selected", function (){
-    let options                         = genOptionList(1, true);
-    options[ 0 ].children               = genOptionList(1, true);
-    options[ 0 ].children[ 0 ].children = genOptionList(3, true);
+    let options = genOptionList([
+      {
+        label      : 'label-0', value: 'value-0', disabled: false, children: [
+          {
+            label      : 'label-00', value: 'value-00', disabled: false, children: [
+              {
+                label: 'label-00', value: 'value-00', disabled: false, children: [], selected: true
+              },
+              {
+                label: 'label-00', value: 'value-00', disabled: false, children: [], selected: true
+              },
+              {
+                label: 'label-00', value: 'value-00', disabled: false, children: [], selected: true
+              },
+            ], selected: true
+          },
+        ], selected: true
+      }
+    ]);
 
     let selectedPath = new SelectedPath([
       options[ 0 ],

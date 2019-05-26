@@ -31,11 +31,12 @@
 </template>
 
 <script>
-  import { Config, OptionNode, SelectedPath } from '@/clazz';
+  import { Config } from '@/clazz';
   import SelectHead from './select-head';
   import CascadePanel from './cascade-panel';
   import Drop from './dropdown.vue';
   import { selPrefix, casPrefix } from "@/share";
+  import { genSelected, genOptionNode } from "@/../test/helper";
 
   export default {
     components: {
@@ -45,15 +46,24 @@
     },
     data (){
       let options = [];
-      options.push(this.genOptionNode('label-0', 'value-0', [
-        this.genOptionNode('label-01', 'value-01', [], true),
-        this.genOptionNode('label-02', 'value-02', [], true)
-      ], true));
-      options.push(this.genOptionNode('label-1', 'value-1', []));
+      options.push(genOptionNode({
+        label   : 'label-0',
+        value   : 'value-0',
+        children: [
+          { label: 'label-01', value: 'value-01' },
+          { label: 'label-02', value: 'value-02' }
+        ]
+      }));
+      options.push(genOptionNode({ label: 'label-1', value: 'value-1' }));
       console.log('options:', options);
 
-      let selected = [];
-      selected.push(this.genSelectedPath(2));
+      let selected = genSelected([
+          [
+            { label: 'label-0', value: 'label-0', },
+            { label: 'label-1', value: 'label-1', }
+          ]
+        ]
+      );
 
       return {
         visible: true,
@@ -94,21 +104,6 @@
         idxList.forEach(idx => {
           this.selected.splice(idx, 1);
         })
-      },
-
-      genOptionNode (label, value, children = [], selected = false){
-        let node      = new OptionNode(label, value, "", "", "", false, children);
-        node.selected = selected;
-        return node;
-      },
-
-      genSelectedPath (len, valueList = []){
-        let list = [];
-        for (let i = 0; i < len; i++) {
-          list.push(this.genOptionNode(`label-${i}`, `${valueList[ i ] ? valueList[ i ] : `value-${i}`}`));
-        }
-
-        return new SelectedPath(list);
       },
     }
   }

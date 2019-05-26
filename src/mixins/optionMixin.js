@@ -100,11 +100,8 @@ export default {
         list.push(new OptionNode(
           item.label,
           item.value,
-          item.icon,
-          item.group,
-          item.iconColor,
+          this.genList(item.children),
           item.disabled,
-          this.genList(item.children)
         ));
       }
       return list;
@@ -123,9 +120,6 @@ export default {
         return false;
       }
 
-      if (typeof optNode.icon !== "string") optNode.icon = "";
-      if (typeof optNode.group !== "string") optNode.group = "";
-      if (typeof optNode.iconColor !== "string") optNode.iconColor = "";
       optNode.disabled = !!optNode.disabled;
 
       return true;

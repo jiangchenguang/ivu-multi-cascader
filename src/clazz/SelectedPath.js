@@ -73,7 +73,7 @@ export default class SelectedPath {
    * 是否是叶子结点
    */
   isLeaf (){
-    return !this.path[ this.path.length - 1 ].children.length;
+    return this.path[ this.path.length - 1 ].children.length === 0;
   }
 
   /**
