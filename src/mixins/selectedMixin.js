@@ -83,26 +83,6 @@ export default {
     },
 
     /**
-     * 通过 自动选择 来初始化选中项
-     */
-    /*
-     initSelectedByAutoSelected (){
-     let onlyPath;
-
-     // 启用自动选择
-     // 当前还没有选中项
-     // 选项是唯一路径
-     if (this.config.autoSelecte &&
-     this.selected.length === 0 &&
-     (onlyPath = this.ifOptionIsOnlyPath(this.options))
-     ) {
-     this.doAdd(onlyPath);
-     }
-     },
-     */
-
-
-    /**
      * 移除所有选中项
      * @return {Selected[]}
      */

@@ -14,9 +14,7 @@ export default class Config {
     filterable,
     notFoundText,
     disabled,
-    autoSelect,
     transfer,
-    allSelectable
   ){
     this.multiple = multiple;
 
@@ -50,13 +48,7 @@ export default class Config {
     // 禁用
     this.disabled = disabled;
 
-    // （初始化）自动选中模式
-    this.autoSelect = autoSelect;
-
     // 同iview
     this.transfer = transfer;
-
-    // 全选按钮（暂不支持）
-    this.allSelectable = allSelectable;
   }
 }

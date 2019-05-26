@@ -1,4 +1,4 @@
-import { genOneSelected, genOneSelectedByOptionList, genOptionNode, genOptionList } from "@/../test/helper";
+import { genOneSelected, genOneSelectedByOptionList, genOptionNode, genOptionList } from "test/helper";
 
 describe("fn:isSamePath", function (){
   it("same", function (){

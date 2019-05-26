@@ -74,20 +74,8 @@ export default {
       default: false
     },
 
-    // （初始化）自动选中模式
-    autoSelect: {
-      type   : Boolean,
-      default: false,
-    },
-
     // 同iview
     transfer: {
-      type   : Boolean,
-      default: false
-    },
-
-    // 全选按钮（暂不支持）
-    allSelectable: {
       type   : Boolean,
       default: false
     },
@@ -126,7 +114,6 @@ export default {
         this.filterable,
         this.notFoundText,
         this.disabled,
-        this.autoSelect,
         this.transfer,
         false
       )

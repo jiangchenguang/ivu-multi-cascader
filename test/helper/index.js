@@ -1,4 +1,4 @@
-import { OptionNode, Selected } from '@/clazz';
+import { Config, OptionNode, Selected } from '@/clazz';
 
 // 生成选项列表
 export function genOptionList (optionList){
@@ -29,4 +29,40 @@ export function genOptionNode (obj){
   );
   node.selected = !!(obj.selected);
   return node;
+}
+
+/**
+ * 生成一个Config对象
+ * @param obj
+ * @return {Config}
+ */
+export function genConfig (
+  {
+    multiple = true,
+    singleLineMode = false,
+    onlyLeaf = false,
+    disableMerge2parent = false,
+    clearable = false,
+    renderFormat = label => label.join(separator),
+    separator = ' / ',
+    placeholder = '请选择',
+    filterable = false,
+    notFoundText = '无匹配数据',
+    disabled = false,
+    transfer = false,
+  } = {}){
+  return new Config(
+    multiple,
+    singleLineMode,
+    onlyLeaf,
+    disableMerge2parent,
+    clearable,
+    renderFormat,
+    separator,
+    placeholder,
+    filterable,
+    notFoundText,
+    disabled,
+    transfer,
+  )
 }

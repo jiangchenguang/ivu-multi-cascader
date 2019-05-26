@@ -1,15 +1,12 @@
 <template>
-  <div
-      :class="classes"
-  >
-    <div ref="reference"
-         :class="selectionCls"
-    >
+  <div :class="classes">
+    <div ref="reference" :class="selectionCls">
       <SelectHead :config="config"
                   :selected="selected"
                   @remove="onRemove"
       ></SelectHead>
     </div>
+
     <transition name="slide-up">
       <Drop
           v-show="visible"
@@ -36,7 +33,7 @@
   import CascadePanel from './cascade-panel';
   import Drop from './dropdown.vue';
   import { selPrefix, casPrefix } from "@/share";
-  import { genSelected, genOptionNode } from "@/../test/helper";
+  import { genSelected, genOptionNode } from "test/helper";
 
   export default {
     components: {
