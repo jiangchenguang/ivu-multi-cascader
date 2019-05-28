@@ -3,7 +3,6 @@ import emitter from "./emitter";
 import Interface from "./interface";
 import optionMixin from "./optionMixin";
 import selectedMixin from "./selectedMixin";
-// import vision from "./vision";
 
 export {
   configMixin,
@@ -11,5 +10,4 @@ export {
   Interface,
   optionMixin,
   selectedMixin,
-  // vision,
 }

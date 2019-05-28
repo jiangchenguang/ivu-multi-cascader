@@ -233,6 +233,7 @@ describe("fn:unselectUpstream", function (){
     expect(selected.path[ 0 ].children[ 0 ].selected).toBe(false);
     expect(selected.path[ 0 ].selected).toBe(false);
 
+    selected.setSelectedDownstream(true);
     let path = selected.selectUpstream();
     expect(selected.path[ 0 ].children[ 0 ].selected).toBe(true);
     expect(selected.path[ 0 ].selected).toBe(true);

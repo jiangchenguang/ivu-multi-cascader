@@ -373,7 +373,7 @@ describe("interface:selectedAddByValueList", () => {
   })
 })
 
-describe("interface:selectedDeleteByIdxList", () => {
+describe("interface:selectedDelete", () => {
   it("typical", function (){
     let vm = genVm({
       multiple: true,
@@ -409,7 +409,7 @@ describe("interface:selectedDeleteByIdxList", () => {
     vm.selectedAddByValueList([ '111', '222' ]);
     vm.selectedAddByValueList([ '111', '333', '444' ]);
     expect(vm.selected.length).toBe(2);
-    let deleted = vm.selectedDeleteByIdxList([ 1, 0 ]);
+    let deleted = vm.selectedDelete([ 1, 0 ]);
     expect(vm.selected.length).toBe(0);
     expect(strValue(deleted[ 0 ])).toBe('111,333,444');
     expect(strValue(deleted[ 1 ])).toBe('111,222');

@@ -60,7 +60,15 @@ export default {
       }
     },
 
-    // ------ interface start ------
+    // ------ interface start 以selected作为函数的prefix ------
+
+    /**
+     * 添加选中项
+     * @param {Selected} selected
+     */
+    selectedAdd (selected){
+      this.doAdd(selected);
+    },
 
     /**
      * 通过value数组添加一个选中项
@@ -78,8 +86,10 @@ export default {
      * @param {number[]} idxList 待删除选中项的index的数组
      * @return {Selected[]}
      */
-    selectedDeleteByIdxList (idxList = []){
-      return this.doDelete(idxList);
+    selectedDelete (idxList = []){
+      let deleted = this.doDelete(idxList);
+      deleted.forEach(i => i.setSelectedDownstream(false));
+      return deleted;
     },
 
     /**
@@ -87,8 +97,9 @@ export default {
      * @return {Selected[]}
      */
     selectedDeleteAll (){
-      let list = this.selected.map((v, idx) => idx);
-      return this.doDelete(list);
+      let deleted = this.doDelete(this.selected.map((v, idx) => idx));
+      deleted.forEach(i => i.setSelectedDownstream(false));
+      return deleted;
     },
 
     // ------ interface end ------

@@ -75,7 +75,7 @@
           (this.config.onlyLeaf && optionNode.children.length)
         ) return;
 
-        this.handleTriggerItem(optionNode, false, true);
+        this.dispatch('MultiCascader', 'select-hover-option');
       },
 
       /**
@@ -85,19 +85,12 @@
       onHover (optionNode){
         if (optionNode.disabled) return;
 
-        this.dispatch('MultiCascader', 'on-hover', {
+        this.dispatch('MultiCascader', 'hover-option', {
           pathDeep: this.pathDeep,
           optionNode,
         })
 
         this.subOptionList = optionNode.children;
-      },
-      // 用户选中选项
-      handleTriggerItem (item, fromInit = false, fromUser = false){
-        this.dispatch('MultiCascader', 'on-selected', {
-          type: 1,
-          item
-        });
       },
     },
   };

@@ -1,6 +1,6 @@
 <template>
-  <div :class="classes">
-    <div ref="reference" :class="selectionCls">
+  <div :class="classes" v-clickOutside="onComponentBlur">
+    <div ref="reference" :class="selectionCls" @click.stop="onClick">
       <SelectHead :config="config"
                   :selected="selected"
                   @remove="onRemove"
@@ -8,18 +8,16 @@
     </div>
 
     <transition name="slide-up">
-      <Drop
-          v-show="visible"
-          :class="dropCls"
-          ref="drop"
-          :data-transfer="transfer"
-          v-transfer-dom>
+      <Drop v-show="casPanelShow"
+            :class="dropCls"
+            ref="drop"
+            :data-transfer="transfer"
+            v-transfer-dom>
         <div>
-          <CascadePanel
-              v-show="!config.filterable || (config.filterable && query === '')"
-              :option-list="options"
-              :pathDeep="0"
-              :config="config"
+          <CascadePanel v-show="!config.filterable || (config.filterable && query === '')"
+                        :option-list="inner_option_list"
+                        :pathDeep="0"
+                        :config="config"
           ></CascadePanel>
         </div>
       </Drop>
@@ -28,46 +26,48 @@
 </template>
 
 <script>
-  import { Config } from '@/clazz';
+  import { Config, Selected } from '@/clazz';
   import SelectHead from './select-head';
   import CascadePanel from './cascade-panel';
   import Drop from './dropdown.vue';
+  import { clickOutside, transferDom } from '@/directives';
+  import { configMixin, optionMixin, selectedMixin } from '@/mixins';
   import { selPrefix, casPrefix } from "@/share";
-  import { genSelected, genOptionNode } from "test/helper";
 
   export default {
+    name      : 'MultiCascader',
+    directives: {
+      clickOutside,
+      transferDom
+    },
+    mixins    : [
+      // configMixin,
+      optionMixin,
+      selectedMixin
+    ],
     components: {
       CascadePanel,
       Drop,
       SelectHead
     },
+    created (){
+      this.initOptions();
+      console.log('option selected', this.inner_option_list, this.selected);
+
+      this.$on('select-hover-option', this.onSelectHoverOption);
+
+      this.$on('hover-option', this.onHoverOption);
+    },
+    props     : {},
     data (){
-      let options = [];
-      options.push(genOptionNode({
-        label   : 'label-0',
-        value   : 'value-0',
-        children: [
-          { label: 'label-01', value: 'value-01' },
-          { label: 'label-02', value: 'value-02' }
-        ]
-      }));
-      options.push(genOptionNode({ label: 'label-1', value: 'value-1' }));
-      console.log('options:', options);
-
-      let selected = genSelected([
-          [
-            { label: 'label-0', value: 'label-0', },
-            { label: 'label-1', value: 'label-1', }
-          ]
-        ]
-      );
-
       return {
-        visible: true,
-        query  : '',
-        config : new Config(true, false, false, false, false, label => label.join(this.separator), '/',),
-        selected,
-        options,
+        /**
+         * 是否显示下拉框
+         */
+        casPanelShow: false,
+        query       : '',
+        hoverPath   : [],
+        config      : new Config(true, false, false, false, false, label => label.join(this.separator), '/',),
       }
     },
     computed  : {
@@ -95,12 +95,45 @@
       }
     },
     methods   : {
+      /**
+       * 当点击选中框
+       */
+      onClick (){
+        if (this.config.disabled) return false;
+
+        if (!this.casPanelShow) {
+          this.casPanelShow = true;
+        }
+      },
+
+      /**
+       * 当组件失去焦点
+       */
+      onComponentBlur (){
+        this.casPanelShow = false;
+      },
+
+      /**
+       * 当鼠标hover选项的处理函数
+       * 保存当前hover选项的完整路径，如果点击的话就直接保存
+       * @param payload
+       */
+      onHoverOption (payload){
+        let { pathDeep, optionNode } = payload;
+        this.hoverPath.splice(pathDeep, this.hoverPath.length - pathDeep, optionNode);
+      },
+
+      /**
+       * 当点击hover的选项
+       */
+      onSelectHoverOption (){
+        if (this.hoverPath) {
+          this.selectedAdd(new Selected(this.hoverPath.slice()));
+        }
+      },
+
       onRemove (idxList){
-        console.log('remove:', idxList);
-        idxList.sort((a, b) => b - a);
-        idxList.forEach(idx => {
-          this.selected.splice(idx, 1);
-        })
+        this.selectedDelete(idxList);
       },
     }
   }

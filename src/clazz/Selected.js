@@ -17,6 +17,7 @@ export default class Selected {
      * @type {OptionNode[]}
      */
     this.path = optionsNodeList;
+    this.setSelectedDownstream(true);
   }
 
   /**
@@ -77,11 +78,31 @@ export default class Selected {
   }
 
   /**
+   * 设置自己及后代的selected属性
+   */
+  setSelectedDownstream(selected) {
+    doSelected(this.path[this.path.length - 1], !!selected);
+
+    /**
+     * set selected flag
+     * @param {OptionNode} optionNode
+     * @param {boolean} selected
+     */
+    function doSelected(optionNode, selected) {
+      if (!optionNode.selected && selected || optionNode.selected && !selected) {
+        optionNode.setSelected(selected);
+        optionNode.children.forEach(i => doSelected(i, selected));
+      }
+    }
+  }
+
+  /**
    * 向上设置选中状态
    * @return {OptionNode[]} 最上层能合并的节点的路径
    */
   selectUpstream (){
-    this.path[ this.path.length - 1 ].selected = true;
+    // todo: 1 应该将设置自身selected和向上向下设置selected?
+    // this.path[ this.path.length - 1 ].selected = true;
     return this.doSetSelectUpstream(this.path, true);
   }
 
@@ -89,6 +110,7 @@ export default class Selected {
    * 向上设置非选中状态
    */
   unselectUpstream (){
+    // todo: 1 应该将设置自身selected和向上向下设置selected?
     this.path[ this.path.length - 1 ].selected = false;
     this.doSetSelectUpstream(this.path, false);
   }
