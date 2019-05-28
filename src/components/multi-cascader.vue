@@ -8,19 +8,13 @@
     </div>
 
     <transition name="slide-up">
-      <Drop v-show="casPanelShow"
-            :class="dropCls"
-            ref="drop"
-            :data-transfer="transfer"
-            v-transfer-dom>
-        <div>
-          <CascadePanel v-show="!config.filterable || (config.filterable && query === '')"
-                        :option-list="inner_option_list"
-                        :pathDeep="0"
-                        :config="config"
-          ></CascadePanel>
-        </div>
-      </Drop>
+      <DropdownPanel v-show="casPanelShow"
+                     :config="config"
+                     :inner_option_list="inner_option_list"
+                     :query="query"
+                     @select="onSelect"
+      >
+      </DropdownPanel>
     </transition>
   </div>
 </template>
@@ -28,8 +22,7 @@
 <script>
   import { Config, Selected } from '@/clazz';
   import SelectHead from './select-head';
-  import CascadePanel from './cascade-panel';
-  import Drop from './dropdown.vue';
+  import DropdownPanel from './dropdown-panel';
   import { clickOutside, transferDom } from '@/directives';
   import { configMixin, optionMixin, selectedMixin } from '@/mixins';
   import { selPrefix, casPrefix } from "@/share";
@@ -46,17 +39,12 @@
       selectedMixin
     ],
     components: {
-      CascadePanel,
-      Drop,
+      DropdownPanel,
       SelectHead
     },
     created (){
       this.initOptions();
       console.log('option selected', this.inner_option_list, this.selected);
-
-      this.$on('select-hover-option', this.onSelectHoverOption);
-
-      this.$on('hover-option', this.onHoverOption);
     },
     props     : {},
     data (){
@@ -89,10 +77,6 @@
           [ `${selPrefix}-selection-focused` ]: this.isFocused
         };
       },
-
-      dropCls (){
-        return this.config.transfer ? `${casPrefix}-transfer` : '';
-      }
     },
     methods   : {
       /**
@@ -114,22 +98,11 @@
       },
 
       /**
-       * 当鼠标hover选项的处理函数
-       * 保存当前hover选项的完整路径，如果点击的话就直接保存
-       * @param payload
+       * 当选择一个选项时
+       * @param optionPath
        */
-      onHoverOption (payload){
-        let { pathDeep, optionNode } = payload;
-        this.hoverPath.splice(pathDeep, this.hoverPath.length - pathDeep, optionNode);
-      },
-
-      /**
-       * 当点击hover的选项
-       */
-      onSelectHoverOption (){
-        if (this.hoverPath) {
-          this.selectedAdd(new Selected(this.hoverPath.slice()));
-        }
+      onSelect (optionPath){
+        this.selectedAdd(new Selected(optionPath));
       },
 
       onRemove (idxList){

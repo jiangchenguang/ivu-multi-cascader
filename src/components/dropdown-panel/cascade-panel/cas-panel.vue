@@ -75,7 +75,7 @@
           (this.config.onlyLeaf && optionNode.children.length)
         ) return;
 
-        this.dispatch('MultiCascader', 'select-hover-option');
+        this.dispatch('dropdownPanel', 'select-hover-option');
       },
 
       /**
@@ -85,7 +85,7 @@
       onHover (optionNode){
         if (optionNode.disabled) return;
 
-        this.dispatch('MultiCascader', 'hover-option', {
+        this.dispatch('dropdownPanel', 'hover-option', {
           pathDeep: this.pathDeep,
           optionNode,
         })
