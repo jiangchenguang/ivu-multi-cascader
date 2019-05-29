@@ -154,7 +154,7 @@ export default {
     /**
      * 根据一个value的数组，找到对应的选项节点路径
      * @param {string[]} valueList 指示了选项的路径
-     * @return {Selected}
+     * @return {OptionNode[]}
      */
     getOptionPathByValueList (valueList = []){
       let find, path = [], list = this.inner_option_list;
@@ -169,7 +169,7 @@ export default {
         }
       }
 
-      return new Selected(path);
+      return path;
     },
     /**
      * 根据用户对象的路径找到一个相同的路径，但节点都是option中的对象
@@ -178,7 +178,7 @@ export default {
      */
     getOptionPathByUserObjPath (userObjPath = [], propName = "value"){
       let selected = [];
-      let currNode     = this.inner_option_list;
+      let currNode = this.inner_option_list;
       for (let path of userObjPath) {
         currNode = currNode.find(item => {
           return assist.isDef(item[ propName ])

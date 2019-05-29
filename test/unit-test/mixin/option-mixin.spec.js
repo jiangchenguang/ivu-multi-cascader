@@ -128,7 +128,7 @@ describe('fn:getOptionPathByValueList', () => {
 
   it('should found', () => {
     let path = vm.getOptionPathByValueList([ '111', '333', '444' ]);
-    expect(strProp(path.path, 'value')).toBe('111,333,444');
+    expect(strProp(path, 'value')).toBe('111,333,444');
   })
 
   it('should not found', () => {

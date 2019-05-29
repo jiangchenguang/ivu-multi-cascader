@@ -53,22 +53,5 @@ export default class OptionNode {
    */
   setSelected (selected){
     this.selected = selected;
-
-    /**
-     * 目前来说：如果设置一个节点选中，则所有子节点都选中
-     * 设置一个节点未选中，因保留其子节点的选中状态
-     */
-    if (selected) {
-      for (let child of this.children) {
-        // 子节点状态是正确的，跳过
-        if (child.selected === selected) continue;
-
-        child.setSelected(selected);
-      }
-    }
-  }
-
-  isDisabled (){
-    return this.disabled;
   }
 }

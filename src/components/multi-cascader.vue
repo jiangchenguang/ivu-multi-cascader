@@ -8,11 +8,12 @@
     </div>
 
     <transition name="slide-up">
-      <DropdownPanel v-show="casPanelShow"
+      <DropdownPanel ref="dropdown"
+                     v-show="casPanelShow"
                      :config="config"
                      :inner_option_list="inner_option_list"
                      :query="query"
-                     @select="onSelect"
+                     @user-select="onUserSelect"
       >
       </DropdownPanel>
     </transition>
@@ -98,15 +99,29 @@
       },
 
       /**
-       * 当选择一个选项时
-       * @param optionPath
+       * 当用户点击一个选项时
+       * @param {OptionNode[]} optionPath
        */
-      onSelect (optionPath){
-        this.selectedAdd(new Selected(optionPath));
+      onUserSelect (optionPath){
+        // 1. 判断是否添加
+        if (!this.selectedCouldAdd(optionPath)) return;
+
+        // 2. 添加选中项
+        let selected = new Selected(optionPath);
+        this.selectedAdd(selected);
+
+        // 3. 设置选项的selected标记
+        let ancestorPath = this.$refs.dropdown.setSelectStatus(selected, true);
+
+        // 4. 如果返回的路径比selectedPath短，说明合并过了，根据配置决定是否向上合并
+        if (!this.config.disableMerge2parent && ancestorPath.length < selected.path.length) {
+          this.selectedAdd(new Selected(ancestorPath));
+        }
       },
 
       onRemove (idxList){
-        this.selectedDelete(idxList);
+        let selectedList = this.selectedDelete(idxList);
+        selectedList.forEach(i => this.$refs.dropdown.setSelectStatus(i, false));
       },
     }
   }

@@ -13,24 +13,23 @@ export default class Selected {
     }
 
     /**
-     * 选项路径数组
+     * 选中项节点路径
      * @type {OptionNode[]}
      */
     this.path = optionsNodeList;
-    this.setSelectedDownstream(true);
   }
 
   /**
    * 是否相同路径
-   * @param {Selected} other
+   * @param {OptionNode[]} path
    * @returns {boolean}
    */
-  isSamePath (other){
-    if (this.path.length !== other.path.length) return false;
+  isSamePath (path){
+    if (this.path.length !== path.length) return false;
 
     let len = this.path.length;
     while (len--) {
-      if (this.path[ len ].value !== other.path[ len ].value) return false;
+      if (this.path[ len ].value !== path[ len ].value) return false;
     }
 
     return true;
@@ -38,16 +37,16 @@ export default class Selected {
 
   /**
    * 是否是入参的子孙节点
-   * @param {Selected} other
+   * @param {OptionNode[]} path
    * @return {boolean}
    */
-  isDescendantOf (other){
+  isDescendantOf (path){
     // 路径长度必须长于入参
-    if (this.path.length <= other.path.length) return false;
+    if (this.path.length <= path.length) return false;
 
-    let len = other.path.length;
+    let len = path.length;
     while (len--) {
-      if (this.path[ len ].value !== other.path[ len ].value) return false;
+      if (this.path[ len ].value !== path[ len ].value) return false;
     }
 
     return true;
@@ -55,16 +54,16 @@ export default class Selected {
 
   /**
    * 是否是入参的祖先节点
-   * @param {Selected} other
+   * @param {OptionNode[]} path
    * @return {boolean}
    */
-  isAncestorOf (other){
+  isAncestorOf (path){
     // 路径长度必须短于入参
-    if (this.path.length >= other.path.length) return false;
+    if (this.path.length >= path.length) return false;
 
     let len = this.path.length;
     while (len--) {
-      if (this.path[ len ].value !== other.path[ len ].value) return false;
+      if (this.path[ len ].value !== path[ len ].value) return false;
     }
 
     return true;
@@ -78,62 +77,10 @@ export default class Selected {
   }
 
   /**
-   * 设置自己及后代的selected属性
+   * 末端节点
+   * @return {OptionNode}
    */
-  setSelectedDownstream(selected) {
-    doSelected(this.path[this.path.length - 1], !!selected);
-
-    /**
-     * set selected flag
-     * @param {OptionNode} optionNode
-     * @param {boolean} selected
-     */
-    function doSelected(optionNode, selected) {
-      if (!optionNode.selected && selected || optionNode.selected && !selected) {
-        optionNode.setSelected(selected);
-        optionNode.children.forEach(i => doSelected(i, selected));
-      }
-    }
-  }
-
-  /**
-   * 向上设置选中状态
-   * @return {OptionNode[]} 最上层能合并的节点的路径
-   */
-  selectUpstream (){
-    // todo: 1 应该将设置自身selected和向上向下设置selected?
-    // this.path[ this.path.length - 1 ].selected = true;
-    return this.doSetSelectUpstream(this.path, true);
-  }
-
-  /**
-   * 向上设置非选中状态
-   */
-  unselectUpstream (){
-    // todo: 1 应该将设置自身selected和向上向下设置selected?
-    this.path[ this.path.length - 1 ].selected = false;
-    this.doSetSelectUpstream(this.path, false);
-  }
-
-  /**
-   * 真正向上设置选中标记
-   * @param {OptionNode[]} path
-   * @param {boolean} selected
-   * @return {OptionNode[]} 最上层能合并的节点的路径
-   */
-  doSetSelectUpstream (path, selected){
-    if (path.length > 1) {
-      let parentPath = path.slice(0, path.length - 1);
-      let parentNode = parentPath[ parentPath.length - 1 ];
-
-      if (
-        (selected && !parentNode.selected && parentNode.isAllChildSelected()) // 父节点未选中，且子节点节点全部选中
-        || (!selected && parentNode.selected && !parentNode.isAllChildSelected()) // 父节点选中，且子节点未全部选中
-      ) {
-        parentNode.setSelected(selected);
-        return this.doSetSelectUpstream(parentPath, selected);
-      }
-    }
-    return path;
+  lastNode (){
+    return this.path[ this.path.length - 1 ];
   }
 }

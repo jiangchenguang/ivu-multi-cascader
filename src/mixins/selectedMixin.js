@@ -49,6 +49,7 @@ export default {
      * 初始化逻辑应该放在外面（因为是业务相关的）
      */
     initByValue (){
+      // todo
       if (!Array.isArray(this.value)) return;
 
       // 标准化成二维数组
@@ -56,29 +57,33 @@ export default {
 
       // 根据用户的选中项，找到选项中的节点，并保存到selected中
       for (let item of userValue) {
-        this.selectedAddByValueList(item.map(i => i.value));
       }
     },
 
     // ------ interface start 以selected作为函数的prefix ------
 
     /**
-     * 添加选中项
-     * @param {Selected} selected
+     * 是否需要添加
+     * @param {OptionNode[]} optionPath
      */
-    selectedAdd (selected){
-      this.doAdd(selected);
+    selectedCouldAdd (optionPath){
+      return (
+        optionPath.length // 不能空
+        && this.selected.every(i => !i.isSamePath(optionPath)) // 不在选中项之列
+        && !(this.config.onlyLeaf && optionPath[ optionPath.length - 1 ].children.length) // 非 只能选叶子节点的情况下，选择非叶子节点
+      )
     },
 
     /**
-     * 通过value数组添加一个选中项
-     * @param {string[]} valueList 指示了选项的路径
+     * 直接添加选中项
+     * @param {Selected} selected
      */
-    selectedAddByValueList (valueList){
-      let selected = this.getOptionPathByValueList(valueList);
-      if (selected) {
-        this.doAdd(selected);
-      }
+    selectedAdd (selected){
+      // 删除后代选中项
+      this.doDeleteDescendant(selected);
+
+      // 添加选中项
+      this.selected.push(selected);
     },
 
     /**
@@ -87,9 +92,7 @@ export default {
      * @return {Selected[]}
      */
     selectedDelete (idxList = []){
-      let deleted = this.doDelete(idxList);
-      deleted.forEach(i => i.setSelectedDownstream(false));
-      return deleted;
+      return this.doDelete(idxList);
     },
 
     /**
@@ -97,51 +100,10 @@ export default {
      * @return {Selected[]}
      */
     selectedDeleteAll (){
-      let deleted = this.doDelete(this.selected.map((v, idx) => idx));
-      deleted.forEach(i => i.setSelectedDownstream(false));
-      return deleted;
+      return this.doDelete(this.selected.map((v, idx) => idx));
     },
 
     // ------ interface end ------
-
-    /**
-     * 真正添加一个选中项
-     * @param {Selected} selected
-     */
-    doAdd (selected){
-      {
-        // 判断是否需要添加
-        if (
-          !selected instanceof Selected ||
-          !selected.path.length || // 没有长度
-          this.selected.some(i => i.isSamePath(selected)) || // 已在选中项之列
-          (this.config.onlyLeaf && !selected.isLeaf()) // 在只能选叶子节点的情况下，添加一个非叶子节点
-        ) {
-          return;
-        }
-      }
-
-      {
-        // 删除现有选中项
-        // 不管是单选还是复现，现有选中项如果是待添加选中项的后代，移除
-        this.doDeleteDescendant(selected);
-        if (!this.config.multiple && this.selected.length) {
-          // 单选模式下，如果选中项不是待选中项的后代，就指定移除并清空标记。
-          let [ only ] = this.doDelete([ 0 ]);
-          only.unselectUpstream();
-        }
-      }
-
-      {
-        // 添加选中项并置标记
-        this.selected.push(selected);
-        let path = selected.selectUpstream();
-        // 如果返回的路径比selectedPath短，说明合并过了，根据配置决定是否向上合并
-        if (!this.config.disableMerge2parent && path.length < selected.path.length) {
-          this.doAdd(new Selected(path));
-        }
-      }
-    },
 
     /**
      * 真正删除选中项
@@ -166,16 +128,17 @@ export default {
 
     /**
      * 移除待添加项的后代选中项
-     * @param {Selected} optionPath
+     * @param {Selected} selected
      * @return {Selected[]}
      */
-    doDeleteDescendant (optionPath){
-      if (optionPath.isLeaf()) return [];
+    doDeleteDescendant (selected){
+      // 没有子孙节点
+      if (!selected.lastNode().children.length) return [];
 
       let toDel = [];
       let len   = this.selected.length;
       while (len--) {
-        if (this.selected[ len ].isDescendantOf(optionPath)) {
+        if (this.selected[ len ].isDescendantOf(selected.path)) {
           toDel.push(len);
         }
       }
