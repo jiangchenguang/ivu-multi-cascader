@@ -3,6 +3,7 @@
  */
 
 import { Selected } from "@/clazz";
+import { findSpecialStrList } from "@/share";
 
 export default {
   props   : {
@@ -10,7 +11,7 @@ export default {
      * 用户提供的选中项
      * 单选：需要一维数组
      * 复选：需要二维数组
-     * @param {{value: String}[]}
+     * @param {string[][]}
      */
     value: {
       type: Array,
@@ -30,33 +31,34 @@ export default {
   },
   computed: {
     /**
-     * 组件内部使用的value，对应外部的value，用于emit或其他判断
-     * 即：单选时是一个选中项的路径，复选时是多个选中项路径的数组
+     * 和selected一一对应，也是选中项，每个选中项都使用value的数组表示
+     * @return {*}
      */
-    // inner_value (){
-    //   return this.config.multiple
-    //     ? this.selected.map(selectedNode => selectedNode.getOptionPath())
-    //     : this.selected.length
-    //       ? this.selected[ 0 ].getOptionPath()
-    //       : [];
-    // },
+    selectedValuePathList (){
+      return this.selected.map(selected => selected.path.map(opt => opt.value));
+    },
   },
   created (){
   },
   methods : {
     /**
-     * 通过value初始化选中项
-     * 初始化逻辑应该放在外面（因为是业务相关的）
+     * 选中项初始化
+     * @param {string[][]|string[]} list
      */
-    selectedInit (){
-      // todo
-      if (!Array.isArray(this.value)) return;
+    selectedInit (list){
+      if (!Array.isArray(list)) return;
 
       // 标准化成二维数组
-      let userValue = this.config.multiple ? this.value : [ this.value ];
+      let selectedList = this.config.multiple ? this.value : [ this.value ];
 
       // 根据用户的选中项，找到选项中的节点，并保存到selected中
-      for (let item of userValue) {
+      for (let valueList of selectedList) {
+        if (!valueList.every(i => typeof i === 'string')) continue;
+
+        let path = this.optionGetPathByValueList(valueList);
+        if (path) {
+          this.onUserSelect(path);
+        }
       }
     },
 
@@ -132,5 +134,25 @@ export default {
 
       return this.selectedDelete(toDel);
     },
+
+    /**
+     * 判断value和选中项是等价的
+     */
+    selectedEqualWithValue (){
+      // v-model
+      if (this.value === this.selectedValuePathList) return true;
+
+      // 通过长度快速判断
+      if (this.value.length !== this.selectedValuePathList.length) return false;
+
+      // 一一查找
+      for (let valueList of this.value) {
+        if (!valueList.every(i => typeof i === 'string')
+          || !findSpecialStrList(this.selectedValuePathList, valueList)
+        ) return false;
+      }
+
+      return true;
+    }
   }
 }

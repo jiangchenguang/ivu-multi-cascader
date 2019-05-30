@@ -45,7 +45,17 @@
     },
     created (){
       this.optionInit();
-      console.log('option selected', this.inner_option_list, this.selected);
+    },
+    mounted (){
+      this.selectedInit(this.value);
+
+      this.emit();
+      console.log('option:', this.inner_option_list, 'selected:', this.selected);
+    },
+    watch     : {
+      value (){
+        this.onChangeValue();
+      }
     },
     props     : {},
     data (){
@@ -123,6 +133,29 @@
         let selectedList = this.selectedDelete(idxList);
         selectedList.forEach(i => this.$refs.dropdown.setSelectStatus(i, false));
       },
+
+      /**
+       * 当value修改时
+       */
+      onChangeValue (){
+        if (!this.selectedEqualWithValue()) {
+          // 清空旧选中项
+          let deleted = this.selectedDeleteAll();
+          deleted.forEach(i => this.$refs.dropdown.setSelectStatus(i, false));
+
+          this.selectedInit(this.value);
+
+          this.emit();
+        }
+      },
+
+      /**
+       * 通知value变化
+       */
+      emit (){
+        this.$emit('input', this.selectedValuePathList);
+        this.$emit('on-change', this.selectedValuePathList);
+      }
     }
   }
 </script>
