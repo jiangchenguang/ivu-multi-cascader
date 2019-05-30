@@ -44,7 +44,7 @@
       SelectHead
     },
     created (){
-      this.initOptions();
+      this.optionInit();
       console.log('option selected', this.inner_option_list, this.selected);
     },
     props     : {},

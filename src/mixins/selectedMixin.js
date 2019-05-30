@@ -48,7 +48,7 @@ export default {
      * 通过value初始化选中项
      * 初始化逻辑应该放在外面（因为是业务相关的）
      */
-    initByValue (){
+    selectedInit (){
       // todo
       if (!Array.isArray(this.value)) return;
 
@@ -59,8 +59,6 @@ export default {
       for (let item of userValue) {
       }
     },
-
-    // ------ interface start 以selected作为函数的prefix ------
 
     /**
      * 是否需要添加
@@ -80,7 +78,7 @@ export default {
      */
     selectedAdd (selected){
       // 删除后代选中项
-      this.doDeleteDescendant(selected);
+      this.selectedDeleteDescendant(selected);
 
       // 添加选中项
       this.selected.push(selected);
@@ -92,25 +90,6 @@ export default {
      * @return {Selected[]}
      */
     selectedDelete (idxList = []){
-      return this.doDelete(idxList);
-    },
-
-    /**
-     * 移除所有选中项
-     * @return {Selected[]}
-     */
-    selectedDeleteAll (){
-      return this.doDelete(this.selected.map((v, idx) => idx));
-    },
-
-    // ------ interface end ------
-
-    /**
-     * 真正删除选中项
-     * @param {number[]} idxList 待删除选中项的index的数组
-     * @return {Selected[]}
-     */
-    doDelete (idxList = []){
       let len, idx, toRemoved, removed = [];
 
       // 从后往前删除
@@ -127,11 +106,19 @@ export default {
     },
 
     /**
+     * 移除所有选中项
+     * @return {Selected[]}
+     */
+    selectedDeleteAll (){
+      return this.selectedDelete(this.selected.map((v, idx) => idx));
+    },
+
+    /**
      * 移除待添加项的后代选中项
      * @param {Selected} selected
      * @return {Selected[]}
      */
-    doDeleteDescendant (selected){
+    selectedDeleteDescendant (selected){
       // 没有子孙节点
       if (!selected.lastNode().children.length) return [];
 
@@ -143,38 +130,7 @@ export default {
         }
       }
 
-      return this.doDelete(toDel);
+      return this.selectedDelete(toDel);
     },
-
-    /**
-     * 选中项是否变化
-     * @param userSelected
-     */
-    /*
-     ifSelectedModified (userSelected){
-     try {
-     if (assist.typeOf(userSelected) !== "array") return true;
-
-     // 统一使用二维数组
-     let user  = this.config.multiple ? userSelected : [ userSelected ];
-     let inner = this.config.multiple ? this.inner_value : [ this.inner_value ];
-     if (user.length !== inner.length) return true;
-
-     // 逐个判断每个选中项是否一致
-     for (let idx = 0; idx < user.length; idx++) {
-     let userItem  = user[ idx ];
-     let innerItem = inner[ idx ];
-     if (userItem.length !== innerItem.length) return true;
-     for (let deep = 0; deep < userItem.length; deep++) {
-     if (userItem[ deep ].value !== innerItem[ deep ].value) return true;
-     }
-     }
-     }
-     catch (e) {
-     return true;
-     }
-     return false;
-     },
-     */
   }
 }

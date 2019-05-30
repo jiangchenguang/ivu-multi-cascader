@@ -5,7 +5,7 @@ import { optionMixin } from "@/mixins";
 function genVm (propsData){
   const Ctor = Vue.extend({
     created (){
-      this.initOptions();
+      this.optionInit();
     },
     mixins: [ optionMixin ]
   });
@@ -100,7 +100,7 @@ describe("construction", function (){
   })
 })
 
-describe('fn:getOptionPathByValueList', () => {
+describe('fn:optionGetPathByValueList', () => {
   let vm = genVm({
     options: [
       {
@@ -127,15 +127,15 @@ describe('fn:getOptionPathByValueList', () => {
   })
 
   it('should found', () => {
-    let path = vm.getOptionPathByValueList([ '111', '333', '444' ]);
+    let path = vm.optionGetPathByValueList([ '111', '333', '444' ]);
     expect(strProp(path, 'value')).toBe('111,333,444');
   })
 
   it('should not found', () => {
-    let path = vm.getOptionPathByValueList([ '000' ]);
+    let path = vm.optionGetPathByValueList([ '000' ]);
     expect(path).toBe(null);
 
-    path = vm.getOptionPathByValueList([ '111', '222', '444' ]);
+    path = vm.optionGetPathByValueList([ '111', '222', '444' ]);
     expect(path).toBe(null);
   });
 })

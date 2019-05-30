@@ -28,8 +28,8 @@ function genVm (propsData){
     },
     methods: {
       init (){
-        this.initOptions();
-        // this.initByValue();
+        this.optionInit();
+        // this.selectedInit();
       },
 
       /**
