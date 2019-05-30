@@ -3,18 +3,18 @@
  */
 export default class Config {
   constructor (
-    multiple,
-    singleLineMode,
-    onlyLeaf,
-    disableMerge2parent,
-    clearable,
-    renderFormat,
-    separator,
-    placeholder,
-    filterable,
-    notFoundText,
-    disabled,
-    transfer,
+    multiple            = true,
+    singleLineMode      = false,
+    onlyLeaf            = false,
+    disableMerge2parent = false,
+    clearable           = true,
+    renderFormat        = (label => label.join(`${this.separator}`)),
+    separator           = ' / ',
+    placeholder         = '请选择',
+    filterable          = false,
+    notFoundText        = '无匹配内容',
+    disabled            = false,
+    transfer            = false,
   ){
     this.multiple = multiple;
 

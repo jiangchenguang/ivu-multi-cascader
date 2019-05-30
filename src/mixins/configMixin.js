@@ -7,78 +7,40 @@ import { Config } from '@/clazz';
 export default {
   props   : {
     // 多选模式
-    multiple: {
-      type   : Boolean,
-      default: true
-    },
+    multiple: Boolean,
 
     // 单行显示模式
-    singleLineMode: {
-      type   : Boolean,
-      default: false,
-    },
+    singleLineMode: Boolean,
 
     // 只选叶子模式
-    onlyLeaf: {
-      type   : Boolean,
-      default: false,
-    },
+    onlyLeaf: Boolean,
 
     // 禁止选中项合并模式（只有在onlyLeaf关闭时有效）
-    disableMerge2parent: {
-      type   : Boolean,
-      default: false,
-    },
+    disableMerge2parent: Boolean,
 
     // 可清空
-    clearable: {
-      type   : Boolean,
-      default: true
-    },
+    clearable: Boolean,
 
     // 自定义选中项显示函数
-    renderFormat: {
-      type: Function,
-      default (label){
-        return label.join(`${this.config.separator}`);
-      }
-    },
+    renderFormat: Function,
 
     // 选中项显示使用的分割符
-    separator: {
-      type   : String,
-      default: ' / ',
-    },
+    separator: String,
 
     // 占位符
-    placeholder: {
-      type   : String,
-      default: '请选择',
-    },
+    placeholder: String,
 
     // 可搜索
-    filterable: {
-      type   : Boolean,
-      default: false
-    },
+    filterable: Boolean,
 
     // 搜索无结果时显示的问题
-    notFoundText: {
-      type   : String,
-      default: '无匹配内容',
-    },
+    notFoundText: String,
 
     // 禁用
-    disabled: {
-      type   : Boolean,
-      default: false
-    },
+    disabled: Boolean,
 
     // 同iview
-    transfer: {
-      type   : Boolean,
-      default: false
-    },
+    transfer: Boolean,
   },
   data (){
     return {
@@ -90,7 +52,6 @@ export default {
     }
   },
   created (){
-    this.configInit();
   },
   computed: {},
   methods : {
@@ -103,19 +64,18 @@ export default {
      */
     configInit (){
       this.config = new Config(
-        this.multiple,
-        this.singleLineMode,
-        this.onlyLeaf,
-        this.onlyLeaf || this.disableMerge2parent,
-        this.clearable,
+        true,
+        false,
+        false,
+        false,
+        true,
         this.renderFormat,
         this.separator,
         this.placeholder,
-        this.filterable,
+        false,
         this.notFoundText,
         this.disabled,
         this.transfer,
-        false
       )
     }
   }

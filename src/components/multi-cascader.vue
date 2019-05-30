@@ -35,7 +35,7 @@
       transferDom
     },
     mixins    : [
-      // configMixin,
+      configMixin,
       optionMixin,
       selectedMixin
     ],
@@ -44,6 +44,7 @@
       SelectHead
     },
     created (){
+      this.configInit();
       this.optionInit();
     },
     mounted (){
@@ -66,7 +67,6 @@
         casPanelShow: false,
         query       : '',
         hoverPath   : [],
-        config      : new Config(true, false, false, false, false, label => label.join(this.separator), '/',),
       }
     },
     computed  : {
