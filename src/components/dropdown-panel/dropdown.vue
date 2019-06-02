@@ -4,7 +4,7 @@
 <script>
     import Vue from 'vue';
     const isServer = Vue.prototype.$isServer;
-    import { getStyle } from '@/utils/assist';
+    import { getStyle } from '@/share';
     const Popper = isServer ? function() {} : require('popper.js/dist/umd/popper.js');  // eslint-disable-line
 
     export default {

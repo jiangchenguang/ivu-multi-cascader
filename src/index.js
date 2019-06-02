@@ -1,4 +1,3 @@
-// import MultiCascader from './views';
 import MultiCascader from './components';
 
 function install (Vue){
