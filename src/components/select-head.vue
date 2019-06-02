@@ -4,8 +4,10 @@
       <span class="ivu-tag-text">{{ i }}</span>
       <Icon type="ios-close-empty" @click.native.stop="removeTag(idx)"></Icon>
     </div>
-    <span v-else :class="singleDisplayClasses">
-      {{ singleDisplayValue }}
+    <span v-show="!selected.length"
+          :class="singleDisplayClasses"
+    >
+      {{ config.placeholder }}
     </span>
 
     <input ref="input"
@@ -13,7 +15,7 @@
            v-if="config.filterable"
            v-model="query"
            :disabled="config.disabled"
-           :class="[prefixCls + '-input']"
+           :class="inputCls"
            :placeholder="config.placeholder"
            :style="inputStyle"
            autocomplete="off"
@@ -22,14 +24,20 @@
            @focus="onInputFocus"
            @blur="onInputFocus"
     >
-    <Icon type="ios-close" :class="[prefixCls + '-arrow']" v-if="resetSelect" @click.native.stop="onClear"></Icon>
-    <Icon type="arrow-down-b" :class="[prefixCls + '-arrow']" v-if="!resetSelect && !config.disabled"></Icon>
+    <Icon type="ios-close"
+          :class="iconCls"
+          v-show="showClearIcon"
+          @click.native.stop="onClear"
+    ></Icon>
+    <Icon type="arrow-down-b"
+          :class="iconCls"
+          v-show="!config.disabled"
+    ></Icon>
   </div>
 </template>
 <script>
   import { Config } from '@/clazz';
-
-  const prefixCls = 'ivu-select';
+  import { selPrefix, casPrefix } from "@/share";
 
   export default {
     mixins  : [],
@@ -39,26 +47,41 @@
        */
       config  : Config,
       /**
-       * 选中项列表
+       * 选中项
        * @type {Selected[]}
        */
       selected: Array,
+      /**
+       * clear icon
+       */
+      showClearIcon: Boolean,
     },
     data (){
       return {
-        prefixCls  : prefixCls,
         query      : '',
         inputLength: 20,
       };
     },
     computed: {
       singleDisplayClasses (){
-        const { filterable, multiple, showPlaceholder } = this.config;
+        const { filterable, multiple } = this.config;
         return [ {
-          [ prefixCls + '-placeholder' ]   : showPlaceholder && !filterable,
-          [ prefixCls + '-selected-value' ]: !showPlaceholder && !multiple && !filterable,
+          [ selPrefix + '-placeholder' ]   : !this.selected.length && !filterable,
+          [ selPrefix + '-selected-value' ]: this.selected.length && !multiple && !filterable,
         } ];
       },
+
+      /**
+       * 输入框
+       */
+      inputCls (){
+        return `${selPrefix}-input`;
+      },
+
+      iconCls (){
+        return `${casPrefix}-arrow`;
+      },
+
       /**
        * 单选时显示
        * @return {string}
@@ -80,13 +103,13 @@
           : []
       },
       resetSelect (){
-        return !this.showPlaceholder && this.clearable;
+        return this.selected.length && this.config.clearable;
       },
       inputStyle (){
         let style = {};
 
-        if (this.multiple) {
-          if (this.showPlaceholder) {
+        if (this.config.multiple) {
+          if (!this.selected.length) {
             style.width = '100%';
           } else {
             style.width = `${this.inputLength}px`;

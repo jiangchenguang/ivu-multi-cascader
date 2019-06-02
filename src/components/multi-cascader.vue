@@ -3,6 +3,7 @@
     <div ref="reference" :class="selectionCls" @click.stop="onClick">
       <SelectHead :config="config"
                   :selected="selected"
+                  :show-clear-icon="showClearIcon"
                   @remove="onRemove"
       ></SelectHead>
     </div>
@@ -21,7 +22,7 @@
 </template>
 
 <script>
-  import { Config, Selected } from '@/clazz';
+  import { Selected } from '@/clazz';
   import SelectHead from './select-head';
   import DropdownPanel from './dropdown-panel';
   import { clickOutside, transferDom } from '@/directives';
@@ -74,10 +75,14 @@
         return [
           `${casPrefix}`,
           {
+            // visible用于控制显示高亮和下拉箭头旋转
+            [ `${selPrefix}-visible` ]   : this.casPanelShow,
             [ `${selPrefix}-disabled` ]  : this.disabled,
             [ `${selPrefix}-multiple` ]  : this.config.multiple,
             [ `${selPrefix}-single` ]    : !this.config.multiple,
-            [ `${selPrefix}-show-clear` ]: this.showCloseIcon,
+
+            // show-clear控制启用clearable、有选中项、且hover时，隐藏下拉icon
+            [ `${casPrefix}-show-clear` ]: this.showClearIcon,
           }
         ];
       },
@@ -87,6 +92,15 @@
           [ `${selPrefix}-selection` ]        : !this.autoComplete,
           [ `${selPrefix}-selection-focused` ]: this.isFocused
         };
+      },
+
+      /**
+       * 是否显示清空icon
+       */
+      showClearIcon (){
+        return this.config.clearable
+          && !this.config.disabled
+          && this.selected.length
       },
     },
     methods   : {
@@ -159,7 +173,3 @@
     }
   }
 </script>
-
-<style scoped>
-
-</style>

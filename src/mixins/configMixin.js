@@ -68,7 +68,7 @@ export default {
         false,
         false,
         false,
-        true,
+        this.clearable,
         this.renderFormat,
         this.separator,
         this.placeholder,
