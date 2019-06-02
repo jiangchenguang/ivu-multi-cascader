@@ -26,7 +26,7 @@
   import SelectHead from './select-head';
   import DropdownPanel from './dropdown-panel';
   import { clickOutside, transferDom } from '@/directives';
-  import { configMixin, optionMixin, selectedMixin } from '@/mixins';
+  import { configMixin, emitter, optionMixin, selectedMixin } from '@/mixins';
   import { selPrefix, casPrefix } from "@/share";
 
   export default {
@@ -37,6 +37,7 @@
     },
     mixins    : [
       configMixin,
+      emitter,
       optionMixin,
       selectedMixin
     ],
@@ -52,7 +53,7 @@
       this.selectedInit(this.value);
 
       this.emit();
-      console.log('option:', this.inner_option_list, 'selected:', this.selected);
+      // console.log('option:', this.inner_option_list, 'selected:', this.selected);
     },
     watch     : {
       value (){
@@ -76,10 +77,10 @@
           `${casPrefix}`,
           {
             // visible用于控制显示高亮和下拉箭头旋转
-            [ `${selPrefix}-visible` ]   : this.casPanelShow,
-            [ `${selPrefix}-disabled` ]  : this.disabled,
-            [ `${selPrefix}-multiple` ]  : this.config.multiple,
-            [ `${selPrefix}-single` ]    : !this.config.multiple,
+            [ `${selPrefix}-visible` ] : this.casPanelShow,
+            [ `${selPrefix}-disabled` ]: this.disabled,
+            [ `${selPrefix}-multiple` ]: this.config.multiple,
+            [ `${selPrefix}-single` ]  : !this.config.multiple,
 
             // show-clear控制启用clearable、有选中项、且hover时，隐藏下拉icon
             [ `${casPrefix}-show-clear` ]: this.showClearIcon,
@@ -141,11 +142,15 @@
         if (!this.config.disableMerge2parent && ancestorPath.length < selected.path.length) {
           this.selectedAdd(new Selected(ancestorPath));
         }
+
+        this.emit();
       },
 
       onRemove (idxList){
         let selectedList = this.selectedDelete(idxList);
         selectedList.forEach(i => this.$refs.dropdown.setSelectStatus(i, false));
+
+        this.emit();
       },
 
       /**
@@ -169,6 +174,7 @@
       emit (){
         this.$emit('input', this.selectedValuePathList);
         this.$emit('on-change', this.selectedValuePathList);
+        this.dispatch('FormItem', 'on-form-change', this.selectedValuePathList);
       }
     }
   }

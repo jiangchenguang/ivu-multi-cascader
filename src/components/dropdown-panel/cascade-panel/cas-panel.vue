@@ -20,12 +20,12 @@
 <script>
   import Option from './panel-option.vue';
   import { Config, OptionNode } from '@/clazz';
-  import Emitter from '@/mixins/emitter';
+  import { emitter } from '@/mixins';
   import { casPrefix } from "@/share";
 
   export default {
     name      : 'CasPanel',
-    mixins    : [ Emitter ],
+    mixins    : [ emitter ],
     components: { Option },
     props     : {
       /**
