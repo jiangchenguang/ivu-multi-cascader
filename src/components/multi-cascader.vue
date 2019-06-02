@@ -75,8 +75,8 @@
           `${casPrefix}`,
           {
             [ `${selPrefix}-disabled` ]  : this.disabled,
-            [ `${selPrefix}-multiple` ]  : this.multiple,
-            [ `${selPrefix}-single` ]    : !this.multiple,
+            [ `${selPrefix}-multiple` ]  : this.config.multiple,
+            [ `${selPrefix}-single` ]    : !this.config.multiple,
             [ `${selPrefix}-show-clear` ]: this.showCloseIcon,
           }
         ];
