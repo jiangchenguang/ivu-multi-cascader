@@ -22,11 +22,6 @@ module.exports = merge(wpBaseConfig, {
     }
   },
   plugins: [
-    new UglifyJsPlugin(),
-    new CopyWebpackPlugin([
-      {
-        from: path.resolve(__dirname, '../src/examples/index.html'),
-      }
-    ])
+    new UglifyJsPlugin()
   ]
 })

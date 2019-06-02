@@ -1,53 +1,54 @@
 const path = require('path');
 
-function resolve(dir) {
+function resolve (dir){
   return path.join(__dirname, dir);
 }
 
 module.exports = {
-  entry: {
+  entry  : {
     main: path.resolve(__dirname, '../src/index.js'),
   },
-  output: {
+  output : {
     path: path.resolve(__dirname, '../dist/dist')
   },
-  module: {
+  module : {
     rules: [
       {
-        test: /\.vue$/,
-        loader: 'vue-loader',
+        test   : /\.vue$/,
+        loader : 'vue-loader',
         options: {
           less: 'vue-style-loader!css-loader!less-loader',
         }
       },
       {
-        test: /\.js$/,
+        test   : /\.js$/,
         exclude: /node_modules/,
-        loader: 'babel-loader'
+        loader : 'babel-loader'
       },
       {
-        test: /\.less$/,
+        test  : /\.less$/,
         loader: [ 'style-loader', 'css-loader', 'less-loader' ]
       },
       {
-        test: /\.css$/,
+        test  : /\.css$/,
         loader: [ 'style-loader', 'css-loader' ]
       },
       {
-        test: /\.(png|jpg|jpeg|gif|svg)$/,
+        test  : /\.(png|jpg|jpeg|gif|svg)$/,
         loader: 'url-loader?limit=8196',
       },
       {
-        test: /\.(woff|eot|ttf)$/,
+        test  : /\.(woff|eot|ttf)$/,
         loader: 'url-loader'
       },
     ]
   },
   resolve: {
     extensions: [ '.js', '.vue' ],
-    alias: {
+    alias     : {
       'vue$': 'vue/dist/vue.esm.js',
-      '@': resolve('../src'),
+      '@'   : resolve('../src'),
+      'test': resolve('../test'),
     }
   },
 }
