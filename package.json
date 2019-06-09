@@ -1,15 +1,15 @@
 {
-  "name": "multi-cascader",
+  "name": "ivu-multi-cascader",
   "version": "0.0.1",
-  "description": "",
+  "description": "multi-selected cascader component base on iview",
   "main": "dist/multi-cascader.js",
   "scripts": {
     "test": "karma start",
     "dev": "webpack-dev-server --open-page dist/index.html --inline --config build/webpack.dev.config.js",
     "build": "webpack --config build/webpack.prod.config.js"
   },
-  "author": "ultrapower",
-  "license": "ISC",
+  "author": "morning",
+  "license": "MIT",
   "dependencies": {
     "@babel/runtime": "^7.4.2",
     "deepmerge": "^1.5.2",

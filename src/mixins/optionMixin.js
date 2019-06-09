@@ -3,7 +3,6 @@
  */
 
 import { OptionNode, Selected } from "@/clazz";
-import { assist } from '@/utils';
 
 export default {
   props   : {
@@ -88,7 +87,7 @@ export default {
      * @param optionList
      */
     optionGenerate (optionList){
-      if (assist.typeOf(optionList) !== "array") return [];
+      if (!Array.isArray(optionList)) return [];
 
       let list = [];
       for (let item of optionList) {
