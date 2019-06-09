@@ -1,8 +1,10 @@
 <template>
   <div @click="onHeaderClick">
-    <div v-if="config.multiple" class="ivu-tag ivu-tag-checked" v-for="(i, idx) of multiDisplayValue">
-      <span class="ivu-tag-text">{{ i }}</span>
-      <Icon type="ios-close-empty" @click.native.stop="removeTag(idx)"></Icon>
+    <div :style="multiSelectedStyle">
+      <div v-if="config.multiple" ref="tags" class="ivu-tag ivu-tag-checked" v-for="(i, idx) of multiDisplayValue">
+        <span class="ivu-tag-text">{{ i }}</span>
+        <Icon type="ios-close-empty" @click.native.stop="removeTag(idx)"></Icon>
+      </div>
     </div>
     <span v-show="!selected.length"
           :class="singleDisplayClasses"
@@ -24,6 +26,7 @@
            @focus="onInputFocus"
            @blur="onInputFocus"
     >
+    <div class="mask"></div>
     <Icon type="ios-close"
           :class="iconCls"
           v-show="showClearIcon"
@@ -45,12 +48,12 @@
       /**
        * @type Config
        */
-      config  : Config,
+      config       : Config,
       /**
        * 选中项
        * @type {Selected[]}
        */
-      selected: Array,
+      selected     : Array,
       /**
        * clear icon
        */
@@ -60,6 +63,9 @@
       return {
         query      : '',
         inputLength: 20,
+
+        // 所有标签的总宽度
+        totalTagsWidth: 0,
       };
     },
     computed: {
@@ -70,7 +76,12 @@
           [ selPrefix + '-selected-value' ]: this.selected.length && !multiple && !filterable,
         } ];
       },
-
+      multiSelectedStyle (){
+        return {
+          position: 'relative',
+          width   : !this.config.singleLineMode ? '100%' : `${this.totalTagsWidth + 200}px`, // +200 心里踏实
+        }
+      },
       /**
        * 输入框
        */
@@ -92,6 +103,7 @@
           ? renderFormat(this.selected[ 0 ].path.map(i => i.label))
           : '';
       },
+
       /**
        * 选中项显示值
        * @return {string[]}
@@ -141,9 +153,33 @@
       },
     },
     watch   : {
+      /**
+       * 计算总宽度，适用于单行模式
+       */
+      selected (){
+        this.totalTagsWidth = 0;
+        let marginRight     = 4;
+        this.$nextTick(() => {
+          if (this.$refs.tags) {
+            this.$refs.tags.forEach(i => this.totalTagsWidth += i.offsetWidth + marginRight)
+          }
+        });
+      },
       query (){
-        this.$emit('query', this.query);
+        // this.$emit('query', this.query);
       },
     }
   };
 </script>
+
+<style>
+  .mask {
+    border-radius: 4px;
+    position: absolute;
+    right: 1px;
+    top: 1px;
+    height: calc(100% - 2px);
+    width: 22px;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 1));
+  }
+</style>

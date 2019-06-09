@@ -65,7 +65,7 @@ export default {
     configInit (){
       this.config = new Config(
         true,
-        false,
+        this.singleLineMode,
         false,
         false,
         this.clearable,
